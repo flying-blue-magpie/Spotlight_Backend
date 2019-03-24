@@ -24,3 +24,8 @@ tqdm==4.28.1
 pytest==4.0.2
 pytest-cov==2.6.0
 pytest-mock==1.10.0
+
+### server
+Flask==0.12
+Flask-SQLAlchemy==2.1
+Flask-Migrate==2.0.3
