@@ -29,3 +29,4 @@ pytest-mock==1.10.0
 Flask==0.12
 Flask-SQLAlchemy==2.1
 Flask-Migrate==2.0.3
+gunicorn==19.6.0
