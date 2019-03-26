@@ -65,9 +65,7 @@ class Spot(db.Model):
             website=self.website,
             keyword=self.keyword,
             address=self.address,
-            pic1=self.pic1,
-            pic2=self.pic2,
-            pic3=self.pic3,
+            pic=[p for p in [self.pic1, self.pic2, self.pic3] if p],
             px=self.px,
             py=self.py,
         )
