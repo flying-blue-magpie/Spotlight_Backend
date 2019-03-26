@@ -1,18 +1,9 @@
-import os
+from flask import request
 
-from flask import Flask, request
-
-from .models import db
-from .models import User
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-
-# SQLALCHEMY_TRACK_MODIFICATIONS adds significant overhead and will be disabled
-# by default in the future.  Set it to True to suppress this warning.
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-
-db.init_app(app)
+from config import app
+from config import db
+from models import User
+from models import Spot
 
 
 @app.route('/')
@@ -39,6 +30,13 @@ def login():
         return 'pass', 200
     else:
         return 'fail', 200
+
+
+@app.route('/spot/<int:spot_id>', methods=['GET'])
+def get_spot(spot_id):
+    spot = Spot.query.filter_by(id=spot_id).first()
+    j_str = spot.to_json()
+    return j_str, 200
 
 
 if __name__ == '__main__':
