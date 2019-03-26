@@ -21,3 +21,35 @@ class User(db.Model):
         m.update(data.encode('utf8'))
         encoded_passwd = m.hexdigest()
         return encoded_passwd
+
+
+class Spot(db.Model):
+    __tablename__ = 'Spots'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    zone = db.Column(db.String(20), nullable=False)
+    describe = db.Column(db.String(5000))
+    tel = db.Column(db.String(255))
+    website = db.Column(db.String(500))
+    keyword = db.Column(db.String(255))
+    address = db.Column(db.String(500))
+    pic1 = db.Column(db.String(500))
+    pic2 = db.Column(db.String(500))
+    pic3 = db.Column(db.String(500))
+    px = db.Column(db.Float(precision=18))
+    py = db.Column(db.Float(precision=18))
+
+    def __init__(self, name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py):
+        self.name = name
+        self.zone = zone
+        self.describe = describe
+        self.tel = tel
+        self.website = website
+        self.keyword = keyword
+        self.address = address
+        self.pic1 = pic1
+        self.pic2 = pic2
+        self.pic3 = pic3
+        self.px = px
+        self.py = py
