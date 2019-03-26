@@ -1,10 +1,7 @@
 import os
 import hashlib
 
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
+from config import db
 
 class User(db.Model):
     __tablename__ = 'Users'
