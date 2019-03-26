@@ -29,14 +29,17 @@ def login():
     if user and user.encoded_passwd == User.encode_passwd(pwd):
         return 'pass', 200
     else:
-        return 'fail', 200
+        return 'fail', 404
 
 
 @app.route('/spot/<int:spot_id>', methods=['GET'])
 def get_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
-    j_str = spot.to_json()
-    return j_str, 200
+    if spot:
+        j_str = spot.to_json()
+        return j_str, 200
+    else:
+        return '', 404
 
 
 if __name__ == '__main__':
