@@ -3,6 +3,7 @@ from flask import request
 from config import app
 from config import db
 from models import User
+from models import Spot
 
 
 @app.route('/')
@@ -29,6 +30,13 @@ def login():
         return 'pass', 200
     else:
         return 'fail', 200
+
+
+@app.route('/spot/<int:spot_id>', methods=['GET'])
+def get_spot(spot_id):
+    spot = Spot.query.filter_by(id=spot_id).first()
+    j_str = spot.to_json()
+    return j_str, 200
 
 
 if __name__ == '__main__':

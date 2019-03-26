@@ -1,7 +1,9 @@
 import os
 import hashlib
+import json
 
 from config import db
+
 
 class User(db.Model):
     __tablename__ = 'Users'
@@ -53,3 +55,20 @@ class Spot(db.Model):
         self.pic3 = pic3
         self.px = px
         self.py = py
+
+    def to_json(self):
+        dict_ = dict(
+            name=self.name,
+            zone=self.zone,
+            describe=self.describe,
+            tel=self.tel,
+            website=self.website,
+            keyword=self.keyword,
+            address=self.address,
+            pic1=self.pic1,
+            pic2=self.pic2,
+            pic3=self.pic3,
+            px=self.px,
+            py=self.py,
+        )
+        return json.dumps(dict_)

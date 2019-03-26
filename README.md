@@ -25,3 +25,4 @@
 
 * `/register`, POST('acc', 'pwd'), response `('ok', 200)`
 * `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',200)`
+* `/spot/<int:spot_id>`, GET, response `json`
