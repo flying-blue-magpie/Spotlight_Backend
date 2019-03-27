@@ -23,9 +23,6 @@ def insert_tw_spot_to_db():
         df = pd.read_json(json.dumps(data['XML_Head']['Infos']['Info']))
 
     for i, content in df.iterrows():
-        if i <= 4220:
-            continue
-
         name = content['Name']
         describe = content['Toldescribe']
         tel = content['Tel']
