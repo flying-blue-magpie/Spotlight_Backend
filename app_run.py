@@ -1,4 +1,6 @@
 import json
+import hashlib
+import os
 
 from flask import request
 
@@ -6,6 +8,28 @@ from config import app
 from config import db
 from models import User
 from models import Spot
+
+COOKIE_KEY = 'spotlight-server-cookie'
+
+
+def _get_cookie(user_id):
+    data = os.getenv('SECRET_TOKEN', '') + str(user_id)
+    m = hashlib.md5()
+    m.update(data.encode('utf8'))
+    encoded_postfix = m.hexdigest()
+    return '{}@{}'.format(user_id, encoded_postfix)
+
+
+def _get_user_from_cookie(cookie):
+    try:
+        user_id, encoded_postfix = cookie.split('@')
+        user_id = int(user_id)
+        if _get_cookie(user_id) == cookie:
+            return user_id
+        else:
+            return None
+    except:
+        return None
 
 
 @app.route('/')
@@ -29,9 +53,18 @@ def login():
     pwd = request.form['pwd']
     user = User.query.filter_by(account=acc).first()
     if user and user.encoded_passwd == User.encode_passwd(pwd):
-        return 'pass', 200
+        res = app.make_response(('pass', 200))
+        res.set_cookie(key=COOKIE_KEY, value=_get_cookie(user.id))
+        return res
     else:
         return 'fail', 404
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    res = app.make_response(('logout', 200))
+    res.set_cookie(key=COOKIE_KEY, value='', expires=0)
+    return res
 
 
 @app.route('/spot/<int:spot_id>', methods=['GET'])

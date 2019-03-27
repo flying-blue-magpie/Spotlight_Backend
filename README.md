@@ -25,6 +25,7 @@
 
 * `/register`, POST('acc', 'pwd'), response `('ok', 200)`
 * `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
+* `/logout`, GET
 * `/spot/<int:spot_id>`, GET, response `json(name, ..., like)`
 * `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
 * `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
