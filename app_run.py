@@ -44,7 +44,7 @@ def register():
     user = User(acc, pwd)
     db.session.add(user)
     db.session.commit()
-    return 'ok', 200
+    return json.dumps({'status': 'success'}), 200
 
 
 @app.route('/login', methods=['POST'])
@@ -53,16 +53,16 @@ def login():
     pwd = request.form['pwd']
     user = User.query.filter_by(account=acc).first()
     if user and user.encoded_passwd == User.encode_passwd(pwd):
-        res = app.make_response(('pass', 200))
+        res = app.make_response((json.dumps({'status': 'success'}), 200))
         res.set_cookie(key=COOKIE_KEY, value=_get_cookie(user.id))
         return res
     else:
-        return 'fail', 404
+        return json.dumps({'status': 'fail'}), 404
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    res = app.make_response(('logout', 200))
+    res = app.make_response(('', 200))
     res.set_cookie(key=COOKIE_KEY, value='', expires=0)
     return res
 
@@ -71,9 +71,9 @@ def logout():
 def get_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
     if spot:
-        return json.dumps(spot.to_dict()), 200
+        return json.dumps({'status': 'success', 'content': spot.to_dict()}), 200
     else:
-        return '', 404
+        return json.dumps({'status': 'fail'}), 404
 
 
 @app.route('/spots', methods=['GET'])
@@ -89,7 +89,7 @@ def get_spots():
     else:
         spots = Spot.query[zones_slice]
 
-    return json.dumps([spot.to_dict() for spot in spots]), 200
+    return json.dumps({'status': 'success', 'content': [spot.to_dict() for spot in spots]}), 200
 
 
 if __name__ == '__main__':
