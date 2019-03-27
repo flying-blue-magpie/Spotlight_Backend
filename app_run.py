@@ -1,3 +1,5 @@
+import json
+
 from flask import request
 
 from config import app
@@ -36,10 +38,25 @@ def login():
 def get_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
     if spot:
-        j_str = spot.to_json()
-        return j_str, 200
+        return json.dumps(spot.to_dict()), 200
     else:
         return '', 404
+
+
+@app.route('/spots', methods=['GET'])
+def get_spots():
+    zones = request.args.getlist('zone')
+    keyword = request.args.get('kw')
+    page = int(request.args.get('page')) if request.args.get('page') else 0
+
+    NUM_PER_PAGE = 100
+    zones_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
+    if zones:
+        spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
+    else:
+        spots = Spot.query[zones_slice]
+
+    return json.dumps([spot.to_dict() for spot in spots]), 200
 
 
 if __name__ == '__main__':
