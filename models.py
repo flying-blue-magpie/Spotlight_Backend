@@ -1,6 +1,5 @@
 import os
 import hashlib
-import json
 
 from config import db
 
@@ -56,8 +55,8 @@ class Spot(db.Model):
         self.px = px
         self.py = py
 
-    def to_json(self):
-        dict_ = dict(
+    def to_dict(self):
+        return dict(
             name=self.name,
             zone=self.zone,
             describe=self.describe,
@@ -69,4 +68,3 @@ class Spot(db.Model):
             px=self.px,
             py=self.py,
         )
-        return json.dumps(dict_)

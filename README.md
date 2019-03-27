@@ -24,5 +24,18 @@
 ## API
 
 * `/register`, POST('acc', 'pwd'), response `('ok', 200)`
-* `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',200)`
-* `/spot/<int:spot_id>`, GET, response `json`
+* `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
+* `/logout`, GET
+* `/spot/<int:spot_id>`, GET, response `json(name, ..., like)`
+* `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
+* `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
+* `/like/spots`, GET, need cookie
+* `/like/proj/<int:proj_id>`, POST or DELETE, need cookie
+* `/like/projs`, GET, need cookie
+* `/own/proj`, POST, need cookie
+* `/own/projs`, GET, need cookie
+* `/own/proj/<int:proj_id>`, PUT, need cookie
+* `/proj/<int:proj_id>`, GET
+* `/projs`, GET
+
+ps: Need cookie to identify user_id
