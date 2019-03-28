@@ -49,8 +49,9 @@ def register():
 
 @app.route('/login', methods=['POST'])
 def login():
-    acc = request.form['acc']
-    pwd = request.form['pwd']
+    content = request.get_json()
+    acc = content['acc']
+    pwd = content['pwd']
     user = User.query.filter_by(account=acc).first()
     if user and user.encoded_passwd == User.encode_passwd(pwd):
         res = app.make_response((json.dumps({'status': 'success'}), 200))
