@@ -95,3 +95,15 @@ class Project(db.Model):
         self.start_day = start_day
         self.end_day = end_day
         self.plan = plan
+
+
+class FavoriteSpot(db.Model):
+    __tablename__ = 'FavoriteSpots'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
+    spot_id = db.Column(db.Integer, db.ForeignKey("Spots.id"), nullable=False)
+
+    def __init__(self, user_id, spot_id):
+        self.user_id = user_id
+        self.spot_id = User.spot_id
