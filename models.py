@@ -1,6 +1,9 @@
 import os
 import hashlib
 
+import sqlalchemy as sa
+from sqlalchemy import func
+
 from config import db
 
 
@@ -68,3 +71,27 @@ class Spot(db.Model):
             px=self.px,
             py=self.py,
         )
+
+
+class Project(db.Model):
+    __tablename__ = 'Projects'
+
+    proj_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    owner = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
+    start_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    end_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    plan = db.Column(db.String(5000), nullable=False)
+    created_time = db.Column(db.TIMESTAMP(timezone=True), nullable=False,
+                             server_default=func.now())
+    update_time = db.Column(
+        db.TIMESTAMP(timezone=True), nullable=False,
+        server_default=func.now(), onupdate=func.current_timestamp()
+    )
+
+    def __init__(self, name, owner, start_day, end_day, plan):
+        self.name = name
+        self.owner = owner
+        self.start_day = start_day
+        self.end_day = end_day
+        self.plan = plan
