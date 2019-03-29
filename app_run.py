@@ -44,7 +44,12 @@ def register():
     user = User(acc, pwd)
     db.session.add(user)
     db.session.commit()
-    return json.dumps({'status': 'success'}), 200
+    return (
+        json.dumps(
+            {'status': 'success'}
+        ),
+        200,
+    )
 
 
 @app.route('/login', methods=['POST'])
@@ -54,11 +59,26 @@ def login():
     pwd = content['pwd']
     user = User.query.filter_by(account=acc).first()
     if user and user.encoded_passwd == User.encode_passwd(pwd):
-        res = app.make_response((json.dumps({'status': 'success'}), 200))
+        res = app.make_response((
+            json.dumps(
+                {
+                    'status': 'success',
+                    'content': {'user': user.account},
+                }
+            ),
+            200,
+        ))
         res.set_cookie(key=COOKIE_KEY, value=_get_cookie(user.id))
         return res
     else:
-        return json.dumps({'status': 'fail'}), 404
+        return (
+            json.dumps(
+                {
+                    'status': 'fail',
+                }
+            ),
+            404,
+        )
 
 
 @app.route('/logout', methods=['GET'])
@@ -68,13 +88,70 @@ def logout():
     return res
 
 
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        return (
+            json.dumps(
+                {
+                    'status': 'success',
+                    'content': user.to_dict(),
+                }
+            ),
+            200,
+        )
+    else:
+        return (
+            json.dumps(
+                {
+                    'status': 'fail',
+                }
+            ),
+            200,
+        )
+
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    return (
+        json.dumps(
+            {
+                'status': 'success',
+                'content': [user.to_dict() for user in users],
+            }
+        ),
+        200,
+    )
+
+
 @app.route('/spot/<int:spot_id>', methods=['GET'])
 def get_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
     if spot:
-        return json.dumps({'status': 'success', 'content': spot.to_dict()}), 200
+        return (
+            json.dumps(
+                {
+                    'status': 'success',
+                    'content': spot.to_dict(),
+                }
+            ),
+            200,
+        )
     else:
-        return json.dumps({'status': 'fail'}), 404
+        return (
+            json.dumps(
+                {
+                    'status': 'fail',
+                }
+            ),
+            404,
+        )
+
+
+def _sort_by_keyword(keyword, spots):
+    return spots
 
 
 @app.route('/spots', methods=['GET'])
@@ -90,8 +167,18 @@ def get_spots():
     else:
         spots = Spot.query[zones_slice]
 
-    return json.dumps({'status': 'success', 'content': [spot.to_dict() for spot in spots]}), 200
+    if keyword:
+        spots = _sort_by_keyword(keyword, spots)
 
+    return (
+        json.dumps(
+            {
+                'status': 'success',
+                'content': [spot.to_dict() for spot in spots],
+            }
+        ),
+        200,
+    )
 
 if __name__ == '__main__':
     app.run()
