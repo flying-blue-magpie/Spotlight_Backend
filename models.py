@@ -26,6 +26,11 @@ class User(db.Model):
         encoded_passwd = m.hexdigest()
         return encoded_passwd
 
+    def to_dict(self):
+        return dict(
+            account=self.account,
+        )
+
 
 class Spot(db.Model):
     __tablename__ = 'Spots'
