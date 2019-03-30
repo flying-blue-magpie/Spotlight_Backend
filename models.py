@@ -154,7 +154,13 @@ class FavoriteSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
     spot_id = db.Column(db.Integer, db.ForeignKey('Spots.id'), nullable=False)
+    created_time = db.Column(db.TIMESTAMP(timezone=True), nullable=False,
+                             server_default=func.now())
+    update_time = db.Column(
+        db.TIMESTAMP(timezone=True), nullable=False,
+        server_default=func.now(), onupdate=func.current_timestamp()
+    )
 
     def __init__(self, user_id, spot_id):
         self.user_id = user_id
-        self.spot_id = User.spot_id
+        self.spot_id = spot_id
