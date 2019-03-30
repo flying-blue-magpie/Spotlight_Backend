@@ -8,6 +8,8 @@ from config import app
 from config import db
 from models import User
 from models import Spot
+from models import Project
+from utils import json_default_handler
 
 COOKIE_KEY = 'spotlight-server-cookie'
 
@@ -32,6 +34,18 @@ def _get_user_from_cookie(cookie):
         return None
 
 
+def _get_response(status, content=None):
+    dict_ = dict()
+    dict_['status'] = status
+    if content:
+        dict_['content'] = content
+    state_code = 200 if status == 'success' else 404
+    return (
+        json.dumps(dict_, default=json_default_handler),
+        state_code,
+    )
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, this is a backend of Spotlight.'
@@ -44,7 +58,7 @@ def register():
     user = User(acc, pwd)
     db.session.add(user)
     db.session.commit()
-    return json.dumps({'status': 'success'}), 200
+    return _get_response('success')
 
 
 @app.route('/login', methods=['POST'])
@@ -54,27 +68,51 @@ def login():
     pwd = content['pwd']
     user = User.query.filter_by(account=acc).first()
     if user and user.encoded_passwd == User.encode_passwd(pwd):
-        res = app.make_response((json.dumps({'status': 'success'}), 200))
+        res = app.make_response(
+            _get_response('success', content={'user': user.account})
+        )
         res.set_cookie(key=COOKIE_KEY, value=_get_cookie(user.id))
         return res
     else:
-        return json.dumps({'status': 'fail'}), 404
+        return _get_response('fail')
 
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    res = app.make_response(('', 200))
+    res = app.make_response(_get_response('success'))
     res.set_cookie(key=COOKIE_KEY, value='', expires=0)
     return res
+
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        return _get_response('success', content=user.to_dict())
+    else:
+        return _get_response('fail')
+
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    if users:
+        return _get_response('success', content=[user.to_dict() for user in users])
+    else:
+        return _get_response('fail')
 
 
 @app.route('/spot/<int:spot_id>', methods=['GET'])
 def get_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
     if spot:
-        return json.dumps({'status': 'success', 'content': spot.to_dict()}), 200
+        return _get_response('success', content=spot.to_dict())
     else:
-        return json.dumps({'status': 'fail'}), 404
+        return _get_response('fail')
+
+
+def _sort_by_keyword(keyword, spots):
+    return spots
 
 
 @app.route('/spots', methods=['GET'])
@@ -90,7 +128,33 @@ def get_spots():
     else:
         spots = Spot.query[zones_slice]
 
-    return json.dumps({'status': 'success', 'content': [spot.to_dict() for spot in spots]}), 200
+    if keyword:
+        spots = _sort_by_keyword(keyword, spots)
+
+    return _get_response('success', content=[spot.to_dict() for spot in spots])
+
+
+@app.route('/proj/<int:proj_id>', methods=['GET'])
+def get_proj(proj_id):
+    proj = Project.query.filter_by(proj_id=proj_id).first()
+    if proj:
+        return _get_response('success', content=proj.to_dict())
+    else:
+        return _get_response('fail')
+
+
+@app.route('/projs', methods=['GET'])
+def get_projs():
+    owner = request.args.get('owner')
+    if owner:
+        projs = Project.query.filter_by(owner=owner).all()
+    else:
+        projs = Project.query.all()
+
+    if projs:
+        return _get_response('success', content=[proj.to_dict() for proj in projs])
+    else:
+        return _get_response('fail')
 
 
 if __name__ == '__main__':

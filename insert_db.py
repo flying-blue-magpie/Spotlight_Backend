@@ -1,10 +1,12 @@
 import json
 import io
+from datetime import datetime, timedelta
 
 import pandas as pd
 
 from config import db
 from models import Spot
+from models import Project
 
 FILE_TW_SPOT = 'data/tw_spot.json'
 AREA_LIST = ['臺北市', '新北市', '桃園市', '臺中市', '臺南市',
@@ -53,5 +55,31 @@ def insert_tw_spot_to_db():
         print('finish {}'.format(i))
 
 
+def insert_one_proj_to_db():
+    name = 'AAA'
+    owner = 1
+    start_day = datetime(2018, 12, 1)
+    end_day = datetime(2018, 12, 2)
+
+    one_day_plan_list = [Project.OneDayPlan() for _ in range(2)]
+    spots = Spot.query[0:3]
+    one_day_plan_list[0].add_spot(spots[0], timedelta(minutes=60))
+    one_day_plan_list[0].add_spot(spots[1], timedelta(minutes=90))
+    one_day_plan_list[1].add_spot(spots[2], timedelta(minutes=180))
+
+    params = [name, owner, start_day, end_day, one_day_plan_list]
+    proj = Project(*params)
+    db.session.add(proj)
+    db.session.commit()
+
+
+def update_one_proj_to_db():
+    proj = Project.query.filter_by(proj_id='1').first()
+    proj.name = 'BBB'
+    db.session.commit()
+
+
 if __name__ == '__main__':
-    insert_tw_spot_to_db()
+    # insert_tw_spot_to_db()
+    insert_one_proj_to_db()
+    # update_one_proj_to_db()

@@ -1,7 +1,12 @@
 import os
 import hashlib
+import json
+
+import sqlalchemy as sa
+from sqlalchemy import func
 
 from config import db
+from utils import json_default_handler
 
 
 class User(db.Model):
@@ -22,6 +27,11 @@ class User(db.Model):
         m.update(data.encode('utf8'))
         encoded_passwd = m.hexdigest()
         return encoded_passwd
+
+    def to_dict(self):
+        return dict(
+            account=self.account,
+        )
 
 
 class Spot(db.Model):
@@ -68,3 +78,78 @@ class Spot(db.Model):
             px=self.px,
             py=self.py,
         )
+
+
+class Project(db.Model):
+    __tablename__ = 'Projects'
+
+    proj_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    owner = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
+    start_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    end_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    plan = db.Column(db.String(5000), nullable=False)
+    created_time = db.Column(db.TIMESTAMP(timezone=True), nullable=False,
+                             server_default=func.now())
+    update_time = db.Column(
+        db.TIMESTAMP(timezone=True), nullable=False,
+        server_default=func.now(), onupdate=func.current_timestamp()
+    )
+
+    def __init__(self, name, owner, start_day, end_day, one_day_plan_list):
+        self.name = name
+        self.owner = owner
+        self.start_day = start_day
+        self.end_day = end_day
+        self.plan = json.dumps(
+            [p.to_dict() for p in one_day_plan_list], default=json_default_handler
+        )
+
+    def to_dict(self):
+        return dict(
+            name=self.name,
+            owner=self.owner,
+            start_day=self.start_day,
+            end_day=self.end_day,
+            plan=json.loads(self.plan),
+        )
+
+    class OneDayPlan:
+        def __init__(self):
+            self.start_time = '08:00:00'
+            self._arrange = []
+
+        def add_spot(self, spot, during):
+            self._arrange.append(
+                {
+                    'spot_id': spot.id,
+                    'name': spot.name,
+                    'address': spot.address,
+                    'during': during,
+                }
+            )
+
+        def to_dict(self):
+            return dict(
+                start_time=self.start_time,
+                arrange=self._arrange,
+            )
+
+        @classmethod
+        def from_dict(cls, d):
+            obj = Project.OneDayPlan()
+            obj.start_time = d['start_time']
+            obj._arrange = d['arrange']
+            return obj
+
+
+class FavoriteSpot(db.Model):
+    __tablename__ = 'FavoriteSpots'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+    spot_id = db.Column(db.Integer, db.ForeignKey('Spots.id'), nullable=False)
+
+    def __init__(self, user_id, spot_id):
+        self.user_id = user_id
+        self.spot_id = User.spot_id
