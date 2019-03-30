@@ -54,8 +54,9 @@ def hello_world():
 
 @app.route('/register', methods=['POST'])
 def register():
-    acc = request.form['acc']
-    pwd = request.form['pwd']
+    content = request.get_json()
+    acc = content['acc']
+    pwd = content['pwd']
     user = User(acc, pwd)
     db.session.add(user)
     db.session.commit()
@@ -190,6 +191,6 @@ def get_like_spots():
     else:
         return _get_response('fail')
 
-
+g
 if __name__ == '__main__':
     app.run()
