@@ -30,6 +30,7 @@ class User(db.Model):
 
     def to_dict(self):
         return dict(
+            user_id=self.id,
             account=self.account,
         )
 
@@ -67,6 +68,7 @@ class Spot(db.Model):
 
     def to_dict(self):
         return dict(
+            spot_id=self.id,
             name=self.name,
             zone=self.zone,
             describe=self.describe,
@@ -107,11 +109,14 @@ class Project(db.Model):
 
     def to_dict(self):
         return dict(
+            proj_id=self.proj_id,
             name=self.name,
             owner=self.owner,
             start_day=self.start_day,
             end_day=self.end_day,
             plan=json.loads(self.plan),
+            created_time=self.created_time,
+            update_time=self.update_time,
         )
 
     class OneDayPlan:
