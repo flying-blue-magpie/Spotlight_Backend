@@ -86,6 +86,17 @@ def logout():
     return res
 
 
+@app.route('/check_login', methods=['GET'])
+def check_login():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return _get_response('fail')
+    return _get_response('success', content=user.to_dict())
+
+
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     user = User.query.filter_by(id=user_id).first()
