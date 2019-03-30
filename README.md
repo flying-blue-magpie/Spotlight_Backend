@@ -17,23 +17,23 @@
 
 ## API
 
-* [V] `/register`, POST('acc', 'pwd'), response `('ok', 200)`
-* [V] `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
-* [V] `/logout`, GET
-* [-] `/spot/<int:spot_id>`, GET, response `json(name, ..., like)`
+- [x] `/register`, POST('acc', 'pwd'), response `('ok', 200)`
+- [x] `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
+- [x] `/logout`, GET
+- [ ] `/spot/<int:spot_id>`, GET, response `json(name, ..., like)`
     * example: `https://spotlight-server.herokuapp.com/spot/1`
-* [V] `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
+- [x] `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
-* [ ] `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
-* [ ] `/like/spots`, GET, need cookie
-* [ ] `/like/proj/<int:proj_id>`, POST or DELETE, need cookie
-* [ ] `/like/projs`, GET, need cookie
-* [ ] `/own/proj`, POST, need cookie
-* [ ] `/own/projs`, GET, need cookie
-* [ ] `/own/proj/<int:proj_id>`, PUT, need cookie
-* [V] `/proj/<int:proj_id>`, GET
+- [ ] `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
+- [ ] `/like/spots`, GET, need cookie
+- [ ] `/like/proj/<int:proj_id>`, POST or DELETE, need cookie
+- [ ] `/like/projs`, GET, need cookie
+- [ ] `/own/proj`, POST, need cookie
+- [ ] `/own/projs`, GET, need cookie
+- [ ] `/own/proj/<int:proj_id>`, PUT, need cookie
+- [x] `/proj/<int:proj_id>`, GET
     * example: `https://spotlight-server.herokuapp.com/proj/6`
-* [V] `/projs?owner=xxx`, GET
+- [x] `/projs?owner=xxx`, GET
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
 
 ps: Need cookie to identify user_id
