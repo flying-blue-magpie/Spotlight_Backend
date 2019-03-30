@@ -9,6 +9,7 @@ from config import db
 from models import User
 from models import Spot
 from models import Project
+from models import FavoriteSpot
 from utils import json_default_handler
 
 COOKIE_KEY = 'spotlight-server-cookie'
@@ -155,6 +156,26 @@ def get_projs():
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
         return _get_response('fail')
+
+
+@app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
+def change_like_spot(spot_id):
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_spot = FavoriteSpot.query.filter_by(
+        user_id=user_id, spot_id=spot_id).first()
+    if request.method == 'POST':
+        if not favorite_spot:
+            favorite_spot = FavoriteSpot(user_id, spot_id)
+            db.session.add(favorite_spot)
+            db.session.commit()
+    elif request.method == 'DELETE':
+        if favorite_spot:
+            db.session.delete(favorite_spot)
+            db.session.commit()
+    return _get_response('success')
 
 
 if __name__ == '__main__':
