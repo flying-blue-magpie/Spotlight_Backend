@@ -1,6 +1,6 @@
 import json
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -58,10 +58,16 @@ def insert_tw_spot_to_db():
 def insert_one_proj_to_db():
     name = 'AAA'
     owner = 1
-    start_day = datetime(2018, 12, 1, 1)
-    end_day = datetime(2018, 12, 1, 4)
-    plan = '{}'
-    params = [name, owner, start_day, end_day, plan]
+    start_day = datetime(2018, 12, 1)
+    end_day = datetime(2018, 12, 2)
+
+    one_day_plan_list = [Project.OneDayPlan() for _ in range(2)]
+    spots = Spot.query[0:3]
+    one_day_plan_list[0].add_spot(spots[0], timedelta(minutes=60))
+    one_day_plan_list[0].add_spot(spots[1], timedelta(minutes=90))
+    one_day_plan_list[1].add_spot(spots[2], timedelta(minutes=180))
+
+    params = [name, owner, start_day, end_day, one_day_plan_list]
     proj = Project(*params)
     db.session.add(proj)
     db.session.commit()
@@ -75,5 +81,5 @@ def update_one_proj_to_db():
 
 if __name__ == '__main__':
     # insert_tw_spot_to_db()
-    # insert_one_proj_to_db()
-    update_one_proj_to_db()
+    insert_one_proj_to_db()
+    # update_one_proj_to_db()
