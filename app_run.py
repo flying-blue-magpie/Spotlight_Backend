@@ -178,5 +178,18 @@ def change_like_spot(spot_id):
     return _get_response('success')
 
 
+@app.route('/like/spots', methods=['GET'])
+def get_like_spots():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
+    if favorite_spots:
+        return _get_response('success', content=[fs.to_dict() for fs in favorite_spots])
+    else:
+        return _get_response('fail')
+
+
 if __name__ == '__main__':
     app.run()

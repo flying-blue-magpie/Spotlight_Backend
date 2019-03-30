@@ -160,3 +160,10 @@ class FavoriteSpot(db.Model):
     def __init__(self, user_id, spot_id):
         self.user_id = user_id
         self.spot_id = spot_id
+
+    def to_dict(self):
+        return dict(
+            user_id=self.user_id,
+            spot_id=self.spot_id,
+            created_time=self.created_time,
+        )
