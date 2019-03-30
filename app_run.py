@@ -9,6 +9,7 @@ from config import db
 from models import User
 from models import Spot
 from models import Project
+from models import FavoriteSpot
 from utils import json_default_handler
 
 COOKIE_KEY = 'spotlight-server-cookie'
@@ -53,8 +54,9 @@ def hello_world():
 
 @app.route('/register', methods=['POST'])
 def register():
-    acc = request.form['acc']
-    pwd = request.form['pwd']
+    content = request.get_json()
+    acc = content['acc']
+    pwd = content['pwd']
     user = User(acc, pwd)
     db.session.add(user)
     db.session.commit()
@@ -82,6 +84,17 @@ def logout():
     res = app.make_response(_get_response('success'))
     res.set_cookie(key=COOKIE_KEY, value='', expires=0)
     return res
+
+
+@app.route('/check_login', methods=['GET'])
+def check_login():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return _get_response('fail')
+    return _get_response('success', content=user.to_dict())
 
 
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -157,5 +170,38 @@ def get_projs():
         return _get_response('fail')
 
 
+@app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
+def change_like_spot(spot_id):
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_spot = FavoriteSpot.query.filter_by(
+        user_id=user_id, spot_id=spot_id).first()
+    if request.method == 'POST':
+        if not favorite_spot:
+            favorite_spot = FavoriteSpot(user_id, spot_id)
+            db.session.add(favorite_spot)
+            db.session.commit()
+    elif request.method == 'DELETE':
+        if favorite_spot:
+            db.session.delete(favorite_spot)
+            db.session.commit()
+    return _get_response('success')
+
+
+@app.route('/like/spots', methods=['GET'])
+def get_like_spots():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
+    if favorite_spots:
+        return _get_response('success', content=[fs.to_dict() for fs in favorite_spots])
+    else:
+        return _get_response('fail')
+
+g
 if __name__ == '__main__':
     app.run()
