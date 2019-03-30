@@ -20,12 +20,15 @@
 - [x] `/register`, POST('acc', 'pwd'), response `('ok', 200)`
 - [x] `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
 - [x] `/logout`, GET
+- [x] `/check_login`, GET
 - [ ] `/spot/<int:spot_id>`, GET, response `json(name, ..., like)`
     * example: `https://spotlight-server.herokuapp.com/spot/1`
 - [x] `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
-- [ ] `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
-- [ ] `/like/spots`, GET, need cookie
+- [x] `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
+    * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
+- [x] `/like/spots`, GET, need cookie
+    * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
 - [ ] `/like/proj/<int:proj_id>`, POST or DELETE, need cookie
 - [ ] `/like/projs`, GET, need cookie
 - [ ] `/own/proj`, POST, need cookie
