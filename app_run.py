@@ -202,6 +202,6 @@ def get_like_spots():
     else:
         return _get_response('fail')
 
-g
+
 if __name__ == '__main__':
     app.run()
