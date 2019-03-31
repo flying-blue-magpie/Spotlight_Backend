@@ -11,6 +11,7 @@ from models import Spot
 from models import Project
 from models import FavoriteSpot
 from utils import json_default_handler
+from utils import strftime_to_datetime
 
 COOKIE_KEY = 'spotlight-server-cookie'
 
@@ -201,6 +202,31 @@ def get_like_spots():
         return _get_response('success', content=[fs.to_dict() for fs in favorite_spots])
     else:
         return _get_response('fail')
+
+
+@app.route('/own/proj', methods=['POST'])
+def create_own_proj():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    try:
+        content = request.get_json()
+        name = content['name']
+        start_day = strftime_to_datetime(content['start_day'])
+        end_day = strftime_to_datetime(content['end_day'])
+        one_day_plan_list = [Project.OneDayPlan.from_dict(dict_) for dict_ in content['plan']]
+    except:
+        return _get_response('fail', content='input is not correct')
+
+    if len(one_day_plan_list) != 1+round((end_day-start_day).total_seconds()/(60*60*24)):
+        return _get_response('fail', content='input is not correct')
+
+    params = [name, user_id, start_day, end_day, one_day_plan_list]
+    proj = Project(*params)
+    db.session.add(proj)
+    db.session.commit()
+    return _get_response('success')
 
 
 if __name__ == '__main__':
