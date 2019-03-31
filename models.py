@@ -2,7 +2,6 @@ import os
 import hashlib
 import json
 
-import sqlalchemy as sa
 from sqlalchemy import func
 
 from config import db
@@ -79,7 +78,11 @@ class Spot(db.Model):
             pic=[p for p in [self.pic1, self.pic2, self.pic3] if p],
             px=self.px,
             py=self.py,
+            like_num=self.count_like_num(),
         )
+
+    def count_like_num(self):
+        return FavoriteSpot.query.filter_by(spot_id=self.id).count()
 
 
 class Project(db.Model):
@@ -124,13 +127,11 @@ class Project(db.Model):
             self.start_time = '08:00:00'
             self._arrange = []
 
-        def add_spot(self, spot, during):
+        def add_spot(self, spot, during_min):
             self._arrange.append(
                 {
                     'spot_id': spot.id,
-                    'name': spot.name,
-                    'address': spot.address,
-                    'during': during,
+                    'during': during_min,
                 }
             )
 
