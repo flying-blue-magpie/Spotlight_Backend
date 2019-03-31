@@ -1,6 +1,6 @@
 import json
 import io
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pandas as pd
 
@@ -63,9 +63,9 @@ def insert_one_proj_to_db():
 
     one_day_plan_list = [Project.OneDayPlan() for _ in range(2)]
     spots = Spot.query[0:3]
-    one_day_plan_list[0].add_spot(spots[0], timedelta(minutes=60))
-    one_day_plan_list[0].add_spot(spots[1], timedelta(minutes=90))
-    one_day_plan_list[1].add_spot(spots[2], timedelta(minutes=180))
+    one_day_plan_list[0].add_spot(spots[0], 60)
+    one_day_plan_list[0].add_spot(spots[1], 90)
+    one_day_plan_list[1].add_spot(spots[2], 180)
 
     params = [name, owner, start_day, end_day, one_day_plan_list]
     proj = Project(*params)
