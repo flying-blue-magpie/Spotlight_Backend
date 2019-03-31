@@ -124,13 +124,11 @@ class Project(db.Model):
             self.start_time = '08:00:00'
             self._arrange = []
 
-        def add_spot(self, spot, during):
+        def add_spot(self, spot, during_min):
             self._arrange.append(
                 {
                     'spot_id': spot.id,
-                    'name': spot.name,
-                    'address': spot.address,
-                    'during': during,
+                    'during': during_min,
                 }
             )
 
