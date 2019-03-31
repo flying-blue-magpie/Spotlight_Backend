@@ -229,5 +229,18 @@ def create_own_proj():
     return _get_response('success')
 
 
+@app.route('/own/projs', methods=['GET'])
+def get_own_projs():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    projs = Project.query.filter_by(owner=user_id).all()
+    if projs:
+        return _get_response('success', content=[proj.to_dict() for proj in projs])
+    else:
+        return _get_response('fail')
+
+
 if __name__ == '__main__':
     app.run()
