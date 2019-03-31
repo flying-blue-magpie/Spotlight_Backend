@@ -17,29 +17,31 @@
 
 ## API
 
-- [x] `/register`, POST('acc', 'pwd'), response `('ok', 200)`
-- [x] `/login`, POST('acc', 'pwd'), response `('pass', 200)` or `('fail',404)`
-- [x] `/logout`, GET
-- [x] `/check_login`, GET
-- [x] `/spot/<int:spot_id>`, GET
+- [x] POST `/register`
+    * post json body: `{"acc": "xxx", "pwd": "yyy"}`
+- [x] POST `/login`
+    * post json body: `{"acc": "xxx", "pwd": "yyy"}`
+- [x] GET `/logout`
+- [x] GET `/check_login`
+- [x] GET `/spot/<int:spot_id>`
     * example: `https://spotlight-server.herokuapp.com/spot/1`
-- [x] `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`, GET
+- [x] GET `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
-- [x] `/like/spot/<int:spot_id>`, POST or DELETE, need cookie
+- [x] POST or DELETE `/like/spot/<int:spot_id>`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
-- [x] `/like/spots`, GET, need cookie
+- [x] GET `/like/spots`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
-- [ ] `/like/proj/<int:proj_id>`, POST or DELETE, need cookie
-- [ ] `/like/projs`, GET, need cookie
-- [x] `/own/proj`, POST, need cookie
+- [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
+- [x] GET `/like/projs`, need cookie
+- [x] POST `/own/proj`, need cookie
     * post json body: `{"name": "AAA", "start_day": "2018/12/01 00:00:00", "end_day": "2018/12/02 00:00:00", "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, ...]}]}`
-- [x] `/own/projs`, GET, need cookie
-- [x] `/own/proj/<int:proj_id>`, PUT, need cookie
+- [x] GET `/own/projs`, need cookie
+- [x] PUT `/own/proj/<int:proj_id>`, need cookie
     * put json body: `{"name": "CCC", "start_day": "2018/12/01 00:00:00", "end_day": "2018/12/02 00:00:00", "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, {"start_time": "08:00:00", "arrange": [{"spot_id": 3, "during": 180}]}]}`
     * You can optionally choose `name`, `start_day`, `end_day`, `plan` to update
-- [x] `/proj/<int:proj_id>`, GET
+- [x] GET `/proj/<int:proj_id>`
     * example: `https://spotlight-server.herokuapp.com/proj/6`
-- [x] `/projs?owner=xxx`, GET
+- [x] GET `/projs?owner=xxx`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
 
 ps: Need cookie to identify user_id

@@ -120,7 +120,11 @@ class Project(db.Model):
             plan=json.loads(self.plan),
             created_time=self.created_time,
             update_time=self.update_time,
+            like_num=self.count_like_num(),
         )
+
+    def count_like_num(self):
+        return FavoriteProject.query.filter_by(proj_id=self.proj_id).count()
 
     class OneDayPlan:
         def __init__(self):
@@ -166,5 +170,26 @@ class FavoriteSpot(db.Model):
         return dict(
             user_id=self.user_id,
             spot_id=self.spot_id,
+            created_time=self.created_time,
+        )
+
+
+class FavoriteProject(db.Model):
+    __tablename__ = 'FavoriteProjects'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+    proj_id = db.Column(db.Integer, db.ForeignKey('Projects.proj_id'), nullable=False)
+    created_time = db.Column(db.TIMESTAMP(timezone=True), nullable=False,
+                             server_default=func.now())
+
+    def __init__(self, user_id, proj_id):
+        self.user_id = user_id
+        self.proj_id = proj_id
+
+    def to_dict(self):
+        return dict(
+            user_id=self.user_id,
+            proj_id=self.proj_id,
             created_time=self.created_time,
         )
