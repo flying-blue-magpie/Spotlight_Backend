@@ -10,6 +10,7 @@ from models import User
 from models import Spot
 from models import Project
 from models import FavoriteSpot
+from models import FavoriteProject
 from utils import json_default_handler
 from utils import strftime_to_datetime
 
@@ -264,6 +265,39 @@ def update_own_proj(proj_id):
 
     db.session.commit()
     return _get_response('success')
+
+
+@app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
+def change_like_proj(proj_id):
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_proj = FavoriteProject.query.filter_by(
+        user_id=user_id, proj_id=proj_id).first()
+    if request.method == 'POST':
+        if not favorite_proj:
+            favorite_proj = FavoriteProject(user_id, proj_id)
+            db.session.add(favorite_proj)
+            db.session.commit()
+    elif request.method == 'DELETE':
+        if favorite_proj:
+            db.session.delete(favorite_proj)
+            db.session.commit()
+    return _get_response('success')
+
+
+@app.route('/like/projs', methods=['GET'])
+def get_like_projs():
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    favorite_projs = FavoriteProject.query.filter_by(user_id=user_id).all()
+    if favorite_projs:
+        return _get_response('success', content=[fs.to_dict() for fs in favorite_projs])
+    else:
+        return _get_response('fail')
 
 
 if __name__ == '__main__':
