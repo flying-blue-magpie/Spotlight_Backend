@@ -2,7 +2,6 @@ import os
 import hashlib
 import json
 
-import sqlalchemy as sa
 from sqlalchemy import func
 
 from config import db
