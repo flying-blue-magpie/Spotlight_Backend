@@ -242,5 +242,29 @@ def get_own_projs():
         return _get_response('fail')
 
 
+@app.route('/own/proj/<int:proj_id>', methods=['PUT'])
+def update_own_proj(proj_id):
+    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
+    if not proj:
+        return _get_response('fail', content='project is not found')
+
+    content = request.get_json()
+    if 'name' in content:
+        proj.name = content['name']
+    if 'start_day' in content:
+        proj.start_day = strftime_to_datetime(content['start_day'])
+    if 'end_day' in content:
+        proj.end_day = strftime_to_datetime(content['end_day'])
+    if 'plan' in content:
+        proj.plan = json.dumps(content['plan'], default=json_default_handler)
+
+    db.session.commit()
+    return _get_response('success')
+
+
 if __name__ == '__main__':
     app.run()
