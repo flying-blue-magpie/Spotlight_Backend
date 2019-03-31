@@ -78,7 +78,11 @@ class Spot(db.Model):
             pic=[p for p in [self.pic1, self.pic2, self.pic3] if p],
             px=self.px,
             py=self.py,
+            like_num=self.count_like_num(),
         )
+
+    def count_like_num(self):
+        return FavoriteSpot.query.filter_by(spot_id=self.id).count()
 
 
 class Project(db.Model):
