@@ -26,6 +26,8 @@ def _get_cookie(user_id):
 
 
 def _get_user_from_cookie(cookie):
+    if not cookie:
+        return None
     try:
         user_id, encoded_postfix = cookie.split('@')
         user_id = int(user_id)
@@ -90,7 +92,7 @@ def logout():
 
 @app.route('/check_login', methods=['GET'])
 def check_login():
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
     user = User.query.filter_by(id=user_id).first()
@@ -174,7 +176,7 @@ def get_projs():
 
 @app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
 def change_like_spot(spot_id):
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -194,7 +196,7 @@ def change_like_spot(spot_id):
 
 @app.route('/like/spots', methods=['GET'])
 def get_like_spots():
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -207,7 +209,7 @@ def get_like_spots():
 
 @app.route('/own/proj', methods=['POST'])
 def create_own_proj():
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -232,7 +234,7 @@ def create_own_proj():
 
 @app.route('/own/projs', methods=['GET'])
 def get_own_projs():
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -245,7 +247,7 @@ def get_own_projs():
 
 @app.route('/own/proj/<int:proj_id>', methods=['PUT'])
 def update_own_proj(proj_id):
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -269,7 +271,7 @@ def update_own_proj(proj_id):
 
 @app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
 def change_like_proj(proj_id):
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
@@ -289,7 +291,7 @@ def change_like_proj(proj_id):
 
 @app.route('/like/projs', methods=['GET'])
 def get_like_projs():
-    user_id = _get_user_from_cookie(request.cookies[COOKIE_KEY])
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
