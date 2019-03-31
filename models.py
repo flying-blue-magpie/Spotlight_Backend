@@ -120,7 +120,11 @@ class Project(db.Model):
             plan=json.loads(self.plan),
             created_time=self.created_time,
             update_time=self.update_time,
+            like_num=self.count_like_num(),
         )
+
+    def count_like_num(self):
+        return FavoriteProject.query.filter_by(proj_id=self.proj_id).count()
 
     class OneDayPlan:
         def __init__(self):
