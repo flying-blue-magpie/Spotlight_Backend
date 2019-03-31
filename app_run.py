@@ -44,7 +44,7 @@ def _get_response(status, content=None):
     dict_['status'] = status
     if content:
         dict_['content'] = content
-    state_code = 200 if status == 'success' else 404
+    state_code = 200
     return (
         json.dumps(dict_, default=json_default_handler),
         state_code,
