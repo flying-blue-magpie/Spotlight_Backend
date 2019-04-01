@@ -219,15 +219,13 @@ def create_own_proj():
         content = request.get_json()
         name = content['name']
         start_day = strftime_to_datetime(content['start_day'])
-        end_day = strftime_to_datetime(content['end_day'])
-        one_day_plan_list = [Project.OneDayPlan.from_dict(dict_) for dict_ in content['plan']]
+        tot_days = content['tot_days']
     except:
         return _get_response('fail', content='input is not correct')
 
-    if len(one_day_plan_list) != 1+round((end_day-start_day).total_seconds()/(60*60*24)):
-        return _get_response('fail', content='input is not correct')
+    one_day_plan_list = [Project.OneDayPlan() for _ in range(tot_days)]
 
-    params = [name, user_id, start_day, end_day, one_day_plan_list]
+    params = [name, user_id, start_day, tot_days, one_day_plan_list]
     proj = Project(*params)
     db.session.add(proj)
     db.session.commit()
@@ -262,8 +260,8 @@ def update_own_proj(proj_id):
         proj.name = content['name']
     if 'start_day' in content:
         proj.start_day = strftime_to_datetime(content['start_day'])
-    if 'end_day' in content:
-        proj.end_day = strftime_to_datetime(content['end_day'])
+    if 'tot_days' in content:
+        proj.tot_days = content['tot_days']
     if 'plan' in content:
         proj.plan = json.dumps(content['plan'], default=json_default_handler)
 
