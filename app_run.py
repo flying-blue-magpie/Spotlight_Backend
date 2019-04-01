@@ -2,7 +2,7 @@ import json
 import hashlib
 import os
 
-from flask import request
+from flask import request, make_response
 
 from config import app
 from config import db
@@ -45,10 +45,12 @@ def _get_response(status, content=None):
     if content:
         dict_['content'] = content
     state_code = 200
-    return (
+    resp = make_response(
         json.dumps(dict_, default=json_default_handler),
         state_code,
     )
+    resp.mimetype = 'application/json'
+    return resp
 
 
 @app.route('/')
