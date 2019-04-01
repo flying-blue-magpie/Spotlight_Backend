@@ -36,6 +36,7 @@ class User(db.Model):
 
 class Spot(db.Model):
     __tablename__ = 'Spots'
+    __searchable__ = ['name', 'describe']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
