@@ -2,7 +2,7 @@ import json
 import hashlib
 import os
 
-from flask import request
+from flask import request, make_response
 
 from config import app
 from config import db
@@ -45,10 +45,12 @@ def _get_response(status, content=None):
     if content:
         dict_['content'] = content
     state_code = 200
-    return (
+    resp = make_response(
         json.dumps(dict_, default=json_default_handler),
         state_code,
     )
+    resp.mimetype = 'application/json'
+    return resp
 
 
 @app.route('/')
@@ -128,25 +130,25 @@ def get_spot(spot_id):
         return _get_response('fail')
 
 
-def _sort_by_keyword(keyword, spots):
-    return spots
-
-
 @app.route('/spots', methods=['GET'])
 def get_spots():
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
     page = int(request.args.get('page')) if request.args.get('page') else 0
 
-    NUM_PER_PAGE = 100
+    NUM_PER_PAGE = 10
     zones_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
-    if zones:
-        spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
-    else:
-        spots = Spot.query[zones_slice]
-
     if keyword:
-        spots = _sort_by_keyword(keyword, spots)
+        if zones:
+            spots = Spot.query.msearch(keyword, fields=['name', 'describe']) \
+                    .filter(Spot.zone.in_(zones))[zones_slice]
+        else:
+            spots = Spot.query.msearch(keyword, fields=['name', 'describe'])[zones_slice]
+    else:
+        if zones:
+            spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
+        else:
+            spots = Spot.query[zones_slice]
 
     return _get_response('success', content=[spot.to_dict() for spot in spots])
 
@@ -242,7 +244,7 @@ def get_own_projs():
     if projs:
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
-        return _get_response('fail')
+        return _get_response('fail', content='projects are empty')
 
 
 @app.route('/own/proj/<int:proj_id>', methods=['PUT'])
