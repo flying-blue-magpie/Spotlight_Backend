@@ -36,6 +36,7 @@ class User(db.Model):
 
 class Spot(db.Model):
     __tablename__ = 'Spots'
+    __searchable__ = ['name', 'describe']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -92,7 +93,7 @@ class Project(db.Model):
     name = db.Column(db.String(255), nullable=False)
     owner = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
     start_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
-    end_day = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
+    tot_days = db.Column(db.Integer, nullable=False)
     plan = db.Column(db.String(5000), nullable=False)
     created_time = db.Column(db.TIMESTAMP(timezone=True), nullable=False,
                              server_default=func.now())
@@ -101,11 +102,11 @@ class Project(db.Model):
         server_default=func.now(), onupdate=func.current_timestamp()
     )
 
-    def __init__(self, name, owner, start_day, end_day, one_day_plan_list):
+    def __init__(self, name, owner, start_day, tot_days, one_day_plan_list):
         self.name = name
         self.owner = owner
         self.start_day = start_day
-        self.end_day = end_day
+        self.tot_days = tot_days
         self.plan = json.dumps(
             [p.to_dict() for p in one_day_plan_list], default=json_default_handler
         )
@@ -116,7 +117,7 @@ class Project(db.Model):
             name=self.name,
             owner=self.owner,
             start_day=self.start_day,
-            end_day=self.end_day,
+            tot_days=self.tot_days,
             plan=json.loads(self.plan),
             created_time=self.created_time,
             update_time=self.update_time,

@@ -27,6 +27,7 @@
     * example: `https://spotlight-server.herokuapp.com/spot/1`
 - [x] GET `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
+    * example: `https://spotlight-server.herokuapp.com/spots?zone=宜蘭縣&kw=夜市`
 - [x] POST or DELETE `/like/spot/<int:spot_id>`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
 - [x] GET `/like/spots`, need cookie
@@ -34,10 +35,10 @@
 - [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
 - [x] GET `/like/projs`, need cookie
 - [x] POST `/own/proj`, need cookie
-    * post json body: `{"name": "AAA", "start_day": "2018/12/01 00:00:00", "end_day": "2018/12/02 00:00:00", "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, ...]}]}`
+    * post json body: `{"name": "旅行", "start_day": "2018/12/01 00:00:00", "tot_days": 3}`
 - [x] GET `/own/projs`, need cookie
 - [x] PUT `/own/proj/<int:proj_id>`, need cookie
-    * put json body: `{"name": "CCC", "start_day": "2018/12/01 00:00:00", "end_day": "2018/12/02 00:00:00", "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, {"start_time": "08:00:00", "arrange": [{"spot_id": 3, "during": 180}]}]}`
+    * put json body: `{"name": "CCC", "start_day": "2018/12/01 00:00:00", "tot_days": 2, "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, {"start_time": "08:00:00", "arrange": [{"spot_id": 3, "during": 180}]}]}`
     * You can optionally choose `name`, `start_day`, `end_day`, `plan` to update
 - [x] GET `/proj/<int:proj_id>`
     * example: `https://spotlight-server.herokuapp.com/proj/6`

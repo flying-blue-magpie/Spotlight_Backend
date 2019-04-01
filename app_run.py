@@ -2,7 +2,7 @@ import json
 import hashlib
 import os
 
-from flask import request
+from flask import request, make_response
 
 from config import app
 from config import db
@@ -45,10 +45,12 @@ def _get_response(status, content=None):
     if content:
         dict_['content'] = content
     state_code = 200
-    return (
+    resp = make_response(
         json.dumps(dict_, default=json_default_handler),
         state_code,
     )
+    resp.mimetype = 'application/json'
+    return resp
 
 
 @app.route('/')
@@ -128,25 +130,25 @@ def get_spot(spot_id):
         return _get_response('fail')
 
 
-def _sort_by_keyword(keyword, spots):
-    return spots
-
-
 @app.route('/spots', methods=['GET'])
 def get_spots():
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
     page = int(request.args.get('page')) if request.args.get('page') else 0
 
-    NUM_PER_PAGE = 100
+    NUM_PER_PAGE = 10
     zones_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
-    if zones:
-        spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
-    else:
-        spots = Spot.query[zones_slice]
-
     if keyword:
-        spots = _sort_by_keyword(keyword, spots)
+        if zones:
+            spots = Spot.query.msearch(keyword, fields=['name', 'describe']) \
+                    .filter(Spot.zone.in_(zones))[zones_slice]
+        else:
+            spots = Spot.query.msearch(keyword, fields=['name', 'describe'])[zones_slice]
+    else:
+        if zones:
+            spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
+        else:
+            spots = Spot.query[zones_slice]
 
     return _get_response('success', content=[spot.to_dict() for spot in spots])
 
@@ -217,15 +219,13 @@ def create_own_proj():
         content = request.get_json()
         name = content['name']
         start_day = strftime_to_datetime(content['start_day'])
-        end_day = strftime_to_datetime(content['end_day'])
-        one_day_plan_list = [Project.OneDayPlan.from_dict(dict_) for dict_ in content['plan']]
+        tot_days = content['tot_days']
     except:
         return _get_response('fail', content='input is not correct')
 
-    if len(one_day_plan_list) != 1+round((end_day-start_day).total_seconds()/(60*60*24)):
-        return _get_response('fail', content='input is not correct')
+    one_day_plan_list = [Project.OneDayPlan() for _ in range(tot_days)]
 
-    params = [name, user_id, start_day, end_day, one_day_plan_list]
+    params = [name, user_id, start_day, tot_days, one_day_plan_list]
     proj = Project(*params)
     db.session.add(proj)
     db.session.commit()
@@ -242,7 +242,7 @@ def get_own_projs():
     if projs:
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
-        return _get_response('fail')
+        return _get_response('fail', content='projects are empty')
 
 
 @app.route('/own/proj/<int:proj_id>', methods=['PUT'])
@@ -260,8 +260,8 @@ def update_own_proj(proj_id):
         proj.name = content['name']
     if 'start_day' in content:
         proj.start_day = strftime_to_datetime(content['start_day'])
-    if 'end_day' in content:
-        proj.end_day = strftime_to_datetime(content['end_day'])
+    if 'tot_days' in content:
+        proj.tot_days = content['tot_days']
     if 'plan' in content:
         proj.plan = json.dumps(content['plan'], default=json_default_handler)
 
