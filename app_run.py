@@ -162,6 +162,21 @@ def get_proj(proj_id):
         return _get_response('fail')
 
 
+@app.route('/proj/<int:proj_id>', methods=['DELETE'])
+def delete_own_proj(proj_id):
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
+    if proj:
+        db.session.delete(proj)
+        db.session.commit()
+        return _get_response('success')
+    else:
+        return _get_response('fail')
+
+
 @app.route('/projs', methods=['GET'])
 def get_projs():
     owner = request.args.get('owner')

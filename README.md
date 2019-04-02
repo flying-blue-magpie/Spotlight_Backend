@@ -42,6 +42,7 @@
     * You can optionally choose `name`, `start_day`, `end_day`, `plan` to update
 - [x] GET `/proj/<int:proj_id>`
     * example: `https://spotlight-server.herokuapp.com/proj/6`
+- [x] DELETE `/proj/<int:proj_id>`, need cookie
 - [x] GET `/projs?owner=xxx`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
 
