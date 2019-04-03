@@ -239,7 +239,7 @@ def get_like_spots():
             content = _get_spots_additional_info(favorite_spots_list)
         else:
             content = favorite_spots_list
-        _get_response('success', content=content)
+        return _get_response('success', content=content)
     else:
         return _get_response('fail')
 
