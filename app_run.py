@@ -230,7 +230,7 @@ def get_like_spots():
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
-    verbose = request.args.getlist('verbose')
+    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
 
     favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
     if favorite_spots:
@@ -339,7 +339,7 @@ def get_like_projs():
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
-    verbose = request.args.getlist('verbose')
+    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
 
     favorite_projs = FavoriteProject.query.filter_by(user_id=user_id).all()
     if favorite_projs:
