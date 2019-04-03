@@ -155,13 +155,15 @@ def get_spots():
     return _get_response('success', content=[spot.to_dict() for spot in spots])
 
 
+def _query_proj(proj_id):
+    proj = Project.query.filter_by(proj_id=proj_id).first()
+    return proj.to_dict() if proj else None
+
+
 @app.route('/proj/<int:proj_id>', methods=['GET'])
 def get_proj(proj_id):
-    proj = Project.query.filter_by(proj_id=proj_id).first()
-    if proj:
-        return _get_response('success', content=proj.to_dict())
-    else:
-        return _get_response('fail')
+    content = _query_proj(proj_id)
+    return _get_response('success', content=content) if content else _get_response('fail')
 
 
 @app.route('/proj/<int:proj_id>', methods=['DELETE'])
@@ -322,15 +324,31 @@ def change_like_proj(proj_id):
     return _get_response('success')
 
 
+def _get_projs_additional_info(favorite_projs_list):
+    result = []
+    for origin in favorite_projs_list:
+        dict_ = dict(origin)
+        dict_['proj_info'] = _query_proj(origin['proj_id'])
+        result.append(dict_)
+    return result
+
+
 @app.route('/like/projs', methods=['GET'])
 def get_like_projs():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
+    verbose = request.args.getlist('verbose')
+
     favorite_projs = FavoriteProject.query.filter_by(user_id=user_id).all()
     if favorite_projs:
-        return _get_response('success', content=[fs.to_dict() for fs in favorite_projs])
+        favorite_projs_list = [fs.to_dict() for fs in favorite_projs]
+        if verbose == 1:
+            content = _get_projs_additional_info(favorite_projs_list)
+        else:
+            content = favorite_projs_list
+        return _get_response('success', content=content)
     else:
         return _get_response('fail')
 
