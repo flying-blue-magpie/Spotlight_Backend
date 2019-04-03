@@ -121,13 +121,15 @@ def get_users():
         return _get_response('fail')
 
 
+def _query_spot(spot_id):
+    spot = Spot.query.filter_by(id=spot_id).first()
+    return spot.to_dict() if spot else None
+
+
 @app.route('/spot/<int:spot_id>', methods=['GET'])
 def get_spot(spot_id):
-    spot = Spot.query.filter_by(id=spot_id).first()
-    if spot:
-        return _get_response('success', content=spot.to_dict())
-    else:
-        return _get_response('fail')
+    content = _query_spot(spot_id)
+    return _get_response('success', content=content) if content else _get_response('fail')
 
 
 @app.route('/spots', methods=['GET'])
@@ -211,15 +213,31 @@ def change_like_spot(spot_id):
     return _get_response('success')
 
 
+def _get_spots_additional_info(favorite_spots_list):
+    result = []
+    for origin in favorite_spots_list:
+        dict_ = dict(origin)
+        dict_['spot_info'] = _query_spot(origin['spot_id'])
+        result.append(dict_)
+    return result
+
+
 @app.route('/like/spots', methods=['GET'])
 def get_like_spots():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', content='user_id is missing')
 
+    verbose = request.args.getlist('verbose')
+
     favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
     if favorite_spots:
-        return _get_response('success', content=[fs.to_dict() for fs in favorite_spots])
+        favorite_spots_list = [fs.to_dict() for fs in favorite_spots]
+        if verbose == 1:
+            content = _get_spots_additional_info(favorite_spots_list)
+        else:
+            content = favorite_spots_list
+        _get_response('success', content=content)
     else:
         return _get_response('fail')
 

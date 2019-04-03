@@ -32,6 +32,7 @@
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
 - [x] GET `/like/spots`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
+    * more info: `https://spotlight-server.herokuapp.com/like/spots?verbose=1`
 - [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
 - [x] GET `/like/projs`, need cookie
 - [x] POST `/own/proj`, need cookie
