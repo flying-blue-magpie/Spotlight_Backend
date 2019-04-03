@@ -42,7 +42,7 @@ def _get_user_from_cookie(cookie):
 def _get_response(status, content=None):
     dict_ = dict()
     dict_['status'] = status
-    if content:
+    if content is not None:
         dict_['content'] = content
     state_code = 200
     resp = make_response(
