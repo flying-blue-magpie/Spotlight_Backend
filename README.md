@@ -32,8 +32,10 @@
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
 - [x] GET `/like/spots`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
+    * more info: `https://spotlight-server.herokuapp.com/like/spots?verbose=1`
 - [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
 - [x] GET `/like/projs`, need cookie
+    * more info: `https://spotlight-server.herokuapp.com/like/projs?verbose=1`
 - [x] POST `/own/proj`, need cookie
     * post json body: `{"name": "旅行", "start_day": "2018/12/01 00:00:00", "tot_days": 3}`
 - [x] GET `/own/projs`, need cookie
@@ -42,6 +44,7 @@
     * You can optionally choose `name`, `start_day`, `end_day`, `plan` to update
 - [x] GET `/proj/<int:proj_id>`
     * example: `https://spotlight-server.herokuapp.com/proj/6`
+- [x] DELETE `/proj/<int:proj_id>`, need cookie
 - [x] GET `/projs?owner=xxx`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
 
