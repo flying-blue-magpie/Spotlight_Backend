@@ -118,7 +118,7 @@ def get_users():
     if users:
         return _get_response('success', content=[user.to_dict() for user in users])
     else:
-        return _get_response('fail')
+        return _get_response('success', content=list())
 
 
 def _query_spot(spot_id):
@@ -178,7 +178,7 @@ def delete_own_proj(proj_id):
         db.session.commit()
         return _get_response('success')
     else:
-        return _get_response('fail')
+        return _get_response('success', content=list())
 
 
 @app.route('/projs', methods=['GET'])
@@ -192,7 +192,7 @@ def get_projs():
     if projs:
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
-        return _get_response('fail')
+        return _get_response('success', content=list())
 
 
 @app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
@@ -241,7 +241,7 @@ def get_like_spots():
             content = favorite_spots_list
         return _get_response('success', content=content)
     else:
-        return _get_response('fail')
+        return _get_response('success', content=list())
 
 
 @app.route('/own/proj', methods=['POST'])
@@ -277,7 +277,7 @@ def get_own_projs():
     if projs:
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
-        return _get_response('fail', content='projects are empty')
+        return _get_response('success', content=list())
 
 
 @app.route('/own/proj/<int:proj_id>', methods=['PUT'])
@@ -350,7 +350,7 @@ def get_like_projs():
             content = favorite_projs_list
         return _get_response('success', content=content)
     else:
-        return _get_response('fail')
+        return _get_response('success', content=list())
 
 
 if __name__ == '__main__':
