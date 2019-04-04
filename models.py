@@ -101,6 +101,7 @@ class Project(db.Model):
         db.TIMESTAMP(timezone=True), nullable=False,
         server_default=func.now(), onupdate=func.current_timestamp()
     )
+    is_public = db.Column(db.Boolean, server_default=db.text('FALSE'), nullable=False)
 
     def __init__(self, name, owner, start_day, tot_days, one_day_plan_list):
         self.name = name
@@ -121,6 +122,7 @@ class Project(db.Model):
             plan=json.loads(self.plan),
             created_time=self.created_time,
             update_time=self.update_time,
+            is_public=self.is_public,
             like_num=self.count_like_num(),
         )
 
