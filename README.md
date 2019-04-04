@@ -28,6 +28,8 @@
 - [x] GET `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=宜蘭縣&kw=夜市`
+- [x] GET `/rec/spots?zone=xxx&zone=xxx&kw=xxx`, need cookie
+    * example: `https://spotlight-server.herokuapp.com/rec/spots?zone=宜蘭縣&kw=夜市`
 - [x] POST or DELETE `/like/spot/<int:spot_id>`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
 - [x] GET `/like/spots`, need cookie
