@@ -14,3 +14,7 @@ db_up:
 .PHONY: db_down
 db_down:
 	python ./manage.py db downgrade
+
+.PHONY: create_rec_table
+create_rec_table:
+	python ./recommend.py
