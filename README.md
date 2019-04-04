@@ -1,5 +1,5 @@
 # Spotlight: Backend
-![python-3.7.1](https://img.shields.io/badge/python-3.7.1-blue.svg)
+![python-3.6.5](https://img.shields.io/badge/python-3.6.5-blue.svg)
 
 ## Server
 
