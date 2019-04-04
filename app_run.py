@@ -132,27 +132,43 @@ def get_spot(spot_id):
     return _get_response('success', content=content) if content else _get_response('fail')
 
 
+def _query_spots(zones=None, keyword=None, page_slice=None,
+                 excluded_ids=None, included_ids=None, only_id=False):
+    result = Spot.query
+
+    if keyword:
+        result = result.msearch(keyword, fields=['name', 'describe'])
+    if zones:
+        result = result.filter(Spot.zone.in_(zones))
+    if excluded_ids:
+        result = result.filter(~Spot.id.in_(excluded_ids))
+    if included_ids:
+        result = result.filter(Spot.id.in_(included_ids))
+
+    if only_id:
+        entities = [Spot.id]
+        result = result.with_entities(*entities)
+        return [{'spot_id': tup[0]} for tup in result]
+
+    if page_slice:
+        spots = result[page_slice]
+    else:
+        spots = result.all()
+
+    return [spot.to_dict() for spot in spots]
+
+
 @app.route('/spots', methods=['GET'])
 def get_spots():
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
     page = int(request.args.get('page')) if request.args.get('page') else 0
 
-    NUM_PER_PAGE = 10
-    zones_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
-    if keyword:
-        if zones:
-            spots = Spot.query.msearch(keyword, fields=['name', 'describe']) \
-                    .filter(Spot.zone.in_(zones))[zones_slice]
-        else:
-            spots = Spot.query.msearch(keyword, fields=['name', 'describe'])[zones_slice]
-    else:
-        if zones:
-            spots = Spot.query.filter(Spot.zone.in_(zones))[zones_slice]
-        else:
-            spots = Spot.query[zones_slice]
+    NUM_PER_PAGE = 5
+    page_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
+    content = _query_spots(zones=zones, keyword=keyword, page_slice=page_slice)
 
-    return _get_response('success', content=[spot.to_dict() for spot in spots])
+    return _get_response('success', content=content)
 
 
 def _query_proj(proj_id):
