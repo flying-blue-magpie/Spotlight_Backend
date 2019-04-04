@@ -7,6 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_msearch import Search
 from jieba.analyse import ChineseAnalyzer
 
+from utils import RecManager
+
 # app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -31,3 +33,5 @@ search = Search(app, db=db, analyzer=ChineseAnalyzer())
 REC_TABLE_PATH = 'spot_rec_table.pkl'
 with open(REC_TABLE_PATH, 'rb') as fr:
     spot_rec_table = pickle.load(fr)
+
+rec_manager = RecManager(spot_rec_table)

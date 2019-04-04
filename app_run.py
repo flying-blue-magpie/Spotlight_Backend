@@ -6,6 +6,7 @@ from flask import request, make_response
 
 from config import app
 from config import db
+from config import rec_manager
 from models import User
 from models import Spot
 from models import Project
@@ -167,6 +168,41 @@ def get_spots():
     NUM_PER_PAGE = 5
     page_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
     content = _query_spots(zones=zones, keyword=keyword, page_slice=page_slice)
+
+    return _get_response('success', content=content)
+
+
+@app.route('/rec/spots', methods=['GET'])
+def get_rec_spots():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', content='user_id is missing')
+
+    zones = request.args.getlist('zone')
+    keyword = request.args.get('kw')
+
+    NUM_PER_PAGE = 5
+
+    like_spot_ids = [
+        like_spot.spot_id for like_spot
+        in FavoriteSpot.query.filter_by(user_id=user_id)
+                             .order_by(FavoriteSpot.created_time).all()
+    ]
+
+    if (rec_manager.is_status_changed(user_id, zones=zones, keyword=keyword)
+            or rec_manager.is_cache_empty(user_id)):
+        spot_dict_list = _query_spots(zones=zones, keyword=keyword,
+                                      excluded_ids=like_spot_ids, only_id=True)
+        rec_manager.put(
+            user_id,
+            [d['spot_id'] for d in spot_dict_list],
+            zones=zones,
+            keyword=keyword,
+        )
+    rec_manager.update(user_id, like_spot_ids[:5])
+
+    selected_ids = rec_manager.pop(user_id, 5)
+    content = _query_spots(included_ids=selected_ids)
 
     return _get_response('success', content=content)
 
