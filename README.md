@@ -1,5 +1,5 @@
 # Spotlight: Backend
-![python-3.7.1](https://img.shields.io/badge/python-3.7.1-blue.svg)
+![python-3.6.5](https://img.shields.io/badge/python-3.6.5-blue.svg)
 
 ## Server
 
@@ -40,12 +40,12 @@
     * post json body: `{"name": "旅行", "start_day": "2018/12/01 00:00:00", "tot_days": 3}`
 - [x] GET `/own/projs`, need cookie
 - [x] PUT `/own/proj/<int:proj_id>`, need cookie
-    * put json body: `{"name": "CCC", "start_day": "2018/12/01 00:00:00", "tot_days": 2, "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, {"start_time": "08:00:00", "arrange": [{"spot_id": 3, "during": 180}]}]}`
-    * You can optionally choose `name`, `start_day`, `end_day`, `plan` to update
+    * put json body: `{"name": "CCC", "start_day": "2018/12/01 00:00:00", "tot_days": 2, "plan": [{"start_time": "08:00:00", "arrange": [{"spot_id": 1, "during": 60}, {"spot_id": 2, "during": 90}]}, {"start_time": "08:00:00", "arrange": [{"spot_id": 3, "during": 180}]}], "is_public": true}`
+    * You can optionally choose `name`, `start_day`, `end_day`, `plan`, `is_public` to update
 - [x] GET `/proj/<int:proj_id>`
     * example: `https://spotlight-server.herokuapp.com/proj/6`
 - [x] DELETE `/proj/<int:proj_id>`, need cookie
-- [x] GET `/projs?owner=xxx`
+- [x] GET `/projs?owner=xxx&only_public=true`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
 
 ps: Need cookie to identify user_id
