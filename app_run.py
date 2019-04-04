@@ -148,7 +148,10 @@ def _query_spots(zones=None, keyword=None, page_slice=None,
 
     if only_id:
         entities = [Spot.id]
-        result = result.with_entities(*entities)
+        if page_slice:
+            result = result.with_entities(*entities)[page_slice]
+        else:
+            result = result.with_entities(*entities)
         return [{'spot_id': tup[0]} for tup in result]
 
     if page_slice:
