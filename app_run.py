@@ -183,9 +183,14 @@ def delete_own_proj(proj_id):
 
 @app.route('/projs', methods=['GET'])
 def get_projs():
+    only_public = request.args.get('only_public')
     owner = request.args.get('owner')
-    if owner:
+    if owner and only_public:
+        projs = Project.query.filter_by(owner=owner, is_public=True).all()
+    elif owner and not only_public:
         projs = Project.query.filter_by(owner=owner).all()
+    elif not owner and only_public:
+        projs = Project.query.filter_by(is_public=True).all()
     else:
         projs = Project.query.all()
 
@@ -299,6 +304,8 @@ def update_own_proj(proj_id):
         proj.tot_days = content['tot_days']
     if 'plan' in content:
         proj.plan = json.dumps(content['plan'], default=json_default_handler)
+    if 'is_public' in content:
+        proj.is_public = content['is_public']
 
     db.session.commit()
     return _get_response('success')
@@ -324,11 +331,11 @@ def change_like_proj(proj_id):
     return _get_response('success')
 
 
-def _get_projs_additional_info(favorite_projs_list):
+def _get_projs_additional_info(query_result):
     result = []
-    for origin in favorite_projs_list:
-        dict_ = dict(origin)
-        dict_['proj_info'] = _query_proj(origin['proj_id'])
+    for favorite_proj, proj in query_result:
+        dict_ = favorite_proj.to_dict()
+        dict_['proj_info'] = proj.to_dict()
         result.append(dict_)
     return result
 
@@ -341,13 +348,18 @@ def get_like_projs():
 
     verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
 
-    favorite_projs = FavoriteProject.query.filter_by(user_id=user_id).all()
-    if favorite_projs:
-        favorite_projs_list = [fs.to_dict() for fs in favorite_projs]
+    query_result = (db.session.query(FavoriteProject, Project)
+                    .filter(FavoriteProject.proj_id == Project.proj_id)
+                    .filter(FavoriteProject.user_id == user_id)
+                    .filter(Project.is_public == True)
+                    .all())
+
+    if query_result:
         if verbose == 1:
-            content = _get_projs_additional_info(favorite_projs_list)
+            content = _get_projs_additional_info(query_result)
         else:
-            content = favorite_projs_list
+            favorite_projs, _ = zip(*query_result)
+            content = [fs.to_dict() for fs in favorite_projs]
         return _get_response('success', content=content)
     else:
         return _get_response('success', content=list())
