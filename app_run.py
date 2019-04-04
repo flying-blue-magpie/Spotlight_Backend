@@ -40,11 +40,13 @@ def _get_user_from_cookie(cookie):
         return None
 
 
-def _get_response(status, content=None):
+def _get_response(status, content=None, message=None):
     dict_ = dict()
     dict_['status'] = status
     if content is not None:
         dict_['content'] = content
+    if message is not None:
+        dict_['message'] = message
     state_code = 200
     resp = make_response(
         json.dumps(dict_, default=json_default_handler),
@@ -97,7 +99,7 @@ def logout():
 def check_login():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return _get_response('fail')
@@ -179,7 +181,7 @@ def get_spots():
 def get_rec_spots():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
@@ -225,7 +227,7 @@ def get_proj(proj_id):
 def delete_own_proj(proj_id):
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
     if proj:
@@ -259,7 +261,7 @@ def get_projs():
 def change_like_spot(spot_id):
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     favorite_spot = FavoriteSpot.query.filter_by(
         user_id=user_id, spot_id=spot_id).first()
@@ -288,7 +290,7 @@ def _get_spots_additional_info(favorite_spots_list):
 def get_like_spots():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
 
@@ -308,7 +310,7 @@ def get_like_spots():
 def create_own_proj():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     try:
         content = request.get_json()
@@ -316,7 +318,7 @@ def create_own_proj():
         start_day = strftime_to_datetime(content['start_day'])
         tot_days = content['tot_days']
     except:
-        return _get_response('fail', content='input is not correct')
+        return _get_response('fail', message='input is not correct')
 
     one_day_plan_list = [Project.OneDayPlan() for _ in range(tot_days)]
 
@@ -331,7 +333,7 @@ def create_own_proj():
 def get_own_projs():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     projs = Project.query.filter_by(owner=user_id).all()
     if projs:
@@ -344,11 +346,11 @@ def get_own_projs():
 def update_own_proj(proj_id):
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
     if not proj:
-        return _get_response('fail', content='project is not found')
+        return _get_response('fail', message='project is not found')
 
     content = request.get_json()
     if 'name' in content:
@@ -370,7 +372,7 @@ def update_own_proj(proj_id):
 def change_like_proj(proj_id):
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     favorite_proj = FavoriteProject.query.filter_by(
         user_id=user_id, proj_id=proj_id).first()
@@ -399,7 +401,7 @@ def _get_projs_additional_info(query_result):
 def get_like_projs():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
-        return _get_response('fail', content='user_id is missing')
+        return _get_response('fail', message='user_id is missing')
 
     verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
 
