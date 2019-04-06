@@ -21,7 +21,7 @@ ps: Need cookie to identify user_id
 
 ### For Users
 - [x] POST `/register`
-    * post json body: `{"acc": "xxx", "pwd": "yyy"}`
+    * post json body: `{"acc": "xxx", "pwd": "yyy", "name": "zzz"}`
 - [x] POST `/login`
     * post json body: `{"acc": "xxx", "pwd": "yyy"}`
 - [x] POST `/logout`
