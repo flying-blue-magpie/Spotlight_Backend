@@ -17,12 +17,22 @@
 
 ## API
 
+ps: Need cookie to identify user_id
+
+### For Users
 - [x] POST `/register`
     * post json body: `{"acc": "xxx", "pwd": "yyy"}`
 - [x] POST `/login`
     * post json body: `{"acc": "xxx", "pwd": "yyy"}`
-- [x] GET `/logout`
-- [x] GET `/check_login`
+- [x] POST `/logout`
+- [x] GET `/check_login`, need cookie
+- [x] GET `/user/<int:user_id>`
+- [x] GET `/users`
+- [x] PUT `/own/user`, need cookie
+- [x] GET `/stat/user/<int:user_id>`
+    * response: `{"user_projs_like_count": 3}`
+
+### For Spots
 - [x] GET `/spot/<int:spot_id>`
     * example: `https://spotlight-server.herokuapp.com/spot/1`
 - [x] GET `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`
@@ -35,6 +45,8 @@
 - [x] GET `/like/spots`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
     * more info: `https://spotlight-server.herokuapp.com/like/spots?verbose=1`
+
+### For Projects
 - [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
 - [x] GET `/like/projs`, need cookie
     * more info: `https://spotlight-server.herokuapp.com/like/projs?verbose=1`
@@ -49,5 +61,3 @@
 - [x] DELETE `/proj/<int:proj_id>`, need cookie
 - [x] GET `/projs?owner=xxx&only_public=true`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
-
-ps: Need cookie to identify user_id
