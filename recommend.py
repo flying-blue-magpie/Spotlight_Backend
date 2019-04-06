@@ -1,8 +1,9 @@
 import pickle
+import json
+from collections import defaultdict
 
 import jieba
 from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
 import turicreate as tc
 
 from models import Spot
@@ -26,6 +27,7 @@ def get_tfidf_bow(field):
 
 def _get_equivalent_key(key):
     return (key[1], key[0])
+
 
 def get_similar_dict(tfidf, map_spot_ids, k=10):
     cx = tfidf.tocoo()
@@ -66,6 +68,33 @@ def get_weighted_similar_dict(name_dict, describe_dict, ratio):
     return weighted_similar_dict
 
 
+def insert_rec_table_to_db(similar_spots_dict):
+    pairs = defaultdict(set)
+    for key in similar_spots_dict.keys():
+        if key == 'other':
+            continue
+        i, j = key
+        pairs[i].add(j)
+        pairs[j].add(i)
+
+    for spot in Spot.query.all():
+        i = spot.id
+        try:
+            rec_table = []
+            for j in pairs[i]:
+                rec_table.append([
+                    j,
+                    similar_spots_dict.get((i, j), similar_spots_dict.get(j, i)),
+                ])
+            rec_table.append(['other', similar_spots_dict['other']])
+            spot.rec_table = json.dumps(rec_table)
+            db.session.commit()
+        except:
+            print('error on row {}'.format(i))
+
+        print('finish {}'.format(i))
+
+
 def main():
     tfidf_name, map_spot_ids_name = get_tfidf_bow(field='name')
     similar_spots_name_dict = get_similar_dict(tfidf_name, map_spot_ids_name, k=10)
@@ -79,8 +108,7 @@ def main():
     print('Head 100 items: ', {k: r for k, r in s[:100]})
     print('Number of dict items: ', len(similar_spots_dict))
 
-    with open(config.REC_TABLE_PATH, 'wb') as fw:
-        pickle.dump(similar_spots_dict, fw)
+    insert_rec_table_to_db(similar_spots_dict)
 
 
 if __name__ == '__main__':
