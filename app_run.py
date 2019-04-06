@@ -89,7 +89,7 @@ def login():
         return _get_response('fail')
 
 
-@app.route('/logout', methods=['GET'])
+@app.route('/logout', methods=['POST'])
 def logout():
     res = app.make_response(_get_response('success'))
     res.set_cookie(key=COOKIE_KEY, value='', expires=0)
