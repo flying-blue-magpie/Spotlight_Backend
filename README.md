@@ -21,7 +21,7 @@
     * post json body: `{"acc": "xxx", "pwd": "yyy"}`
 - [x] POST `/login`
     * post json body: `{"acc": "xxx", "pwd": "yyy"}`
-- [x] GET `/logout`
+- [x] POST `/logout`
 - [x] GET `/check_login`
 - [x] GET `/spot/<int:spot_id>`
     * example: `https://spotlight-server.herokuapp.com/spot/1`
