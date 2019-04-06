@@ -6,7 +6,6 @@ from flask import request, make_response
 
 from config import app
 from config import db
-from config import rec_manager
 from models import User
 from models import Spot
 from models import Project
@@ -14,8 +13,10 @@ from models import FavoriteSpot
 from models import FavoriteProject
 from utils import json_default_handler
 from utils import strftime_to_datetime
+from recommend import RecManager
 
 COOKIE_KEY = 'spotlight-server-cookie'
+REC_MANAGER = RecManager()
 
 
 def _get_cookie(user_id):
@@ -170,7 +171,7 @@ def get_spots():
     keyword = request.args.get('kw')
     page = int(request.args.get('page')) if request.args.get('page') else 0
 
-    NUM_PER_PAGE = 5
+    NUM_PER_PAGE = 1
     page_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
     content = _query_spots(zones=zones, keyword=keyword, page_slice=page_slice)
 
@@ -186,27 +187,31 @@ def get_rec_spots():
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
 
-    NUM_PER_PAGE = 5
+    NUM_PER_PAGE = 1
 
     like_spot_ids = [
         like_spot.spot_id for like_spot
         in FavoriteSpot.query.filter_by(user_id=user_id)
                              .order_by(FavoriteSpot.created_time).all()
     ]
+    selected_favorite_ids = like_spot_ids[:5]
 
-    if (rec_manager.is_status_changed(user_id, zones=zones, keyword=keyword)
-            or rec_manager.is_cache_empty(user_id)):
+    if REC_MANAGER.should_be_put(user_id, zones, keyword):
         spot_dict_list = _query_spots(zones=zones, keyword=keyword,
                                       excluded_ids=like_spot_ids, only_id=True)
-        rec_manager.put(
+        REC_MANAGER.put(
             user_id,
             [d['spot_id'] for d in spot_dict_list],
+            selected_favorite_ids,
             zones=zones,
             keyword=keyword,
         )
-    rec_manager.update(user_id, like_spot_ids[:5])
+        REC_MANAGER.update(user_id, selected_favorite_ids)
 
-    selected_ids = rec_manager.pop(user_id, 5)
+    if REC_MANAGER.should_be_updated(user_id, selected_favorite_ids):
+        REC_MANAGER.update(user_id, selected_favorite_ids)
+
+    selected_ids = REC_MANAGER.pop(user_id, NUM_PER_PAGE)
     content = _query_spots(included_ids=selected_ids)
 
     return _get_response('success', content=content)
