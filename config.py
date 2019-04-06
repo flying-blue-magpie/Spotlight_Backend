@@ -1,5 +1,4 @@
 import os
-import pickle
 
 from flask import Flask
 from flask_cors import CORS
@@ -7,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_msearch import Search
 from jieba.analyse import ChineseAnalyzer
 
-from utils import RecManager
 
 # app
 app = Flask(__name__)
@@ -28,10 +26,3 @@ app.config['MSEARCH_INDEX_NAME'] = 'msearch'
 app.config['MSEARCH_BACKEND'] = 'whoosh'
 app.config['MSEARCH_ENABLE'] = True
 search = Search(app, db=db, analyzer=ChineseAnalyzer())
-
-# recommend table
-REC_TABLE_PATH = 'spot_rec_table.pkl'
-with open(REC_TABLE_PATH, 'rb') as fr:
-    spot_rec_table = pickle.load(fr)
-
-rec_manager = RecManager(spot_rec_table)

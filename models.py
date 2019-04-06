@@ -51,6 +51,7 @@ class Spot(db.Model):
     pic3 = db.Column(db.String(500))
     px = db.Column(db.Float(precision=18))
     py = db.Column(db.Float(precision=18))
+    rec_table = db.Column(db.String(50000))
 
     def __init__(self, name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py):
         self.name = name
@@ -196,3 +197,40 @@ class FavoriteProject(db.Model):
             proj_id=self.proj_id,
             created_time=self.created_time,
         )
+
+
+class RecRecord(db.Model):
+    __tablename__ = 'RecRecords'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False, unique=True)
+    rec_list = db.Column(db.String(50000), nullable=False)
+    last_favorite_list = db.Column(db.String(300), nullable=False)
+    last_query_zones = db.Column(db.String(2000))
+    last_query_keyword = db.Column(db.String(300))
+
+    def __init__(self, user_id, rec_list, last_favorite_list,
+                 last_query_zones=None, last_query_keyword=None):
+        self.user_id = user_id
+        self.set_rec_list(rec_list)
+        self.set_last_favorite_list(last_favorite_list)
+        self.set_last_query_zones(last_query_zones)
+        self.last_query_keyword = last_query_keyword
+
+    def to_dict(self):
+        return dict(
+            user_id=self.user_id,
+            rec_list=json.loads(self.rec_list),
+            last_favorite_list=json.loads(self.last_favorite_list),
+            last_query_zones=json.loads(self.last_query_zones) if self.last_query_zones else None,
+            last_query_keyword=self.last_query_keyword,
+        )
+
+    def set_rec_list(self, rec_list):
+        self.rec_list = json.dumps(rec_list)
+
+    def set_last_favorite_list(self, last_favorite_list):
+        self.last_favorite_list = json.dumps(last_favorite_list)
+
+    def set_last_query_zones(self, last_query_zones):
+        self.last_query_zones = json.dumps(last_query_zones) if last_query_zones else None
