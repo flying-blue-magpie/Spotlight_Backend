@@ -12,12 +12,15 @@ class User(db.Model):
     __tablename__ = 'Users'
 
     id = db.Column(db.Integer, primary_key=True)
-    account = db.Column(db.String(255), nullable=False)
+    account = db.Column(db.String(255), nullable=False, unique=True)
     encoded_passwd = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    protrait = db.Column(db.LargeBinary())
 
-    def __init__(self, account, passwd):
+    def __init__(self, account, passwd, name):
         self.account = account
         self.encoded_passwd = User.encode_passwd(passwd)
+        self.name = name
 
     @classmethod
     def encode_passwd(cls, passwd):
@@ -31,6 +34,8 @@ class User(db.Model):
         return dict(
             user_id=self.id,
             account=self.account,
+            name=self.name,
+            protrait=self.protrait,
         )
 
 

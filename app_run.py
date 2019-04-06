@@ -1,6 +1,7 @@
 import json
 import hashlib
 import os
+import re
 
 from flask import request, make_response
 
@@ -17,6 +18,8 @@ from recommend import RecManager
 
 COOKIE_KEY = 'spotlight-server-cookie'
 REC_MANAGER = RecManager()
+EMAIL_REGEX = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+PASSWORD_REGEX = r'^[a-zA-Z\d#$^+=!*()@%&].{0,20}$'
 
 
 def _get_cookie(user_id):
@@ -67,7 +70,15 @@ def register():
     content = request.get_json()
     acc = content['acc']
     pwd = content['pwd']
-    user = User(acc, pwd)
+    name = content['name']
+    if not acc or not re.match(EMAIL_REGEX, acc):
+        return _get_response('fail', message='format of account is not corrent')
+    if not pwd or not re.match(PASSWORD_REGEX, pwd):
+        return _get_response('fail', message='format of password is not corrent')
+    if User.query.filter_by(account=acc).first():
+        return _get_response('fail', message='this account is used')
+
+    user = User(acc, pwd, name)
     db.session.add(user)
     db.session.commit()
     return _get_response('success')
@@ -123,6 +134,24 @@ def get_users():
         return _get_response('success', content=[user.to_dict() for user in users])
     else:
         return _get_response('success', content=list())
+
+
+@app.route('/own/user', methods=['PUT'])
+def change_own_user(user_id):
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    user = User.query.filter_by(id=user_id).first()
+
+    content = request.get_json()
+    if 'name' in content:
+        user.name = content['name']
+    if 'protrait' in content:
+        user.protrait = content['protrait']
+
+    db.session.commit()
+    return _get_response('success')
 
 
 def _query_spot(spot_id):
@@ -425,6 +454,14 @@ def get_like_projs():
         return _get_response('success', content=content)
     else:
         return _get_response('success', content=list())
+
+
+@app.route('/stat/user/<int:user_id>', methods=['GET'])
+def get_user_statistic(user_id):
+    user_projs_like_count = 0
+    for p in Project.query.filter_by(owner=user_id).all():
+        user_projs_like_count += FavoriteProject.query.filter_by(proj_id=p.proj_id).count()
+    return _get_response('success', content=dict(user_proj_like_count=user_projs_like_count))
 
 
 if __name__ == '__main__':
