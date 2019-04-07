@@ -15,6 +15,25 @@
   * upgrade: `make db_up` (please create migration script before this)
   * downgrade: `make db_down` (please remove useless script after this)
 
+## Recommandation
+
+* `make create_rec_table`
+* Algorithm: ranking factorization recommender
+    * Factor Dimension: 32
+    * L2 Regularization on Factors: 1e-09
+    * Solver used for training: sgd
+    * L2 Regularization on Linear Coefficients: 1e-09
+    * Maximum Number of Iterations: 25
+* Process: content-based
+    * use `jieba` to segment words
+    * use TF-IDF to handle bag of words
+    * use `turicreate.ranking_factorization_recommender` to train model
+
+## Image Crawler
+
+* `python crawler.py`
+* Use "Google Image Search" to fill a vacancy of picture links.
+
 ## API
 
 ps: Need cookie to identify user_id
@@ -30,7 +49,7 @@ ps: Need cookie to identify user_id
 - [x] GET `/users`
 - [x] PUT `/own/user`, need cookie
 - [x] GET `/stat/user/<int:user_id>`
-    * response: `{"user_projs_like_count": 3}`
+    * keys of response: "published_projs_count", "collected_spots_count", "collected_projs_count", "projs_liked_count"
 
 ### For Spots
 - [x] GET `/spot/<int:spot_id>`

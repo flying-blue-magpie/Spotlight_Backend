@@ -138,7 +138,7 @@ def _get_equivalent_key(key):
 def get_similar_dict(tfidf, map_spot_ids, k=10):
     cx = tfidf.tocoo()
     sf = tc.SFrame({'user_id': [map_spot_ids[i] for i in cx.row], 'word_id': cx.col, 'r': cx.data})
-    model = tc.recommender.create(sf, 'word_id', 'user_id', target='r')
+    model = tc.ranking_factorization_recommender.create(sf, 'word_id', 'user_id', target='r')
     df_similar_spots = model.get_similar_items(k=k).to_dataframe()
     dict_similar_spots = dict()
     for i, row in df_similar_spots.iterrows():
@@ -205,7 +205,7 @@ def main():
     tfidf_name, map_spot_ids_name = get_tfidf_bow(field='name')
     similar_spots_name_dict = get_similar_dict(tfidf_name, map_spot_ids_name, k=10)
     tfidf_describe, map_spot_ids_describe = get_tfidf_bow(field='describe')
-    similar_spots_describe_dict = get_similar_dict(tfidf_describe, map_spot_ids_describe, k=30)
+    similar_spots_describe_dict = get_similar_dict(tfidf_describe, map_spot_ids_describe, k=50)
     similar_spots_dict = get_weighted_similar_dict(similar_spots_name_dict,
                                                    similar_spots_describe_dict,
                                                    ratio=5)
