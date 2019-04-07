@@ -15,6 +15,15 @@
   * upgrade: `make db_up` (please create migration script before this)
   * downgrade: `make db_down` (please remove useless script after this)
 
+## Recommandation
+
+* `make create_rec_table`
+
+## Image Crawler
+
+* `python crawler.py`
+* Use "Google Image Search" to fill a vacancy of picture links.
+
 ## API
 
 ps: Need cookie to identify user_id

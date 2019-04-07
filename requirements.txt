@@ -42,3 +42,7 @@ flask-msearch==0.1.9
 
 ## database
 psycopg2-binary==2.7.7
+
+## crawler
+user_agent==0.1.9
+Pillow==6.0.0
