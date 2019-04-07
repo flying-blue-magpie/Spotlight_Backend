@@ -458,10 +458,25 @@ def get_like_projs():
 
 @app.route('/stat/user/<int:user_id>', methods=['GET'])
 def get_user_statistic(user_id):
-    user_projs_like_count = 0
+
+    published_projs_count = Project.query.filter_by(owner=user_id, is_public=True).count()
+
+    collected_spots_count = FavoriteSpot.query.filter_by(user_id=user_id).count()
+    collected_projs_count = FavoriteProject.query.filter_by(user_id=user_id).count()
+
+    projs_liked_count = 0
     for p in Project.query.filter_by(owner=user_id).all():
-        user_projs_like_count += FavoriteProject.query.filter_by(proj_id=p.proj_id).count()
-    return _get_response('success', content=dict(user_proj_like_count=user_projs_like_count))
+        projs_liked_count += FavoriteProject.query.filter_by(proj_id=p.proj_id).count()
+
+    return _get_response(
+        'success',
+        content=dict(
+            published_projs_count=published_projs_count,
+            collected_spots_count=collected_spots_count,
+            collected_projs_count=collected_projs_count,
+            projs_liked_count=projs_liked_count,
+        )
+    )
 
 
 if __name__ == '__main__':
