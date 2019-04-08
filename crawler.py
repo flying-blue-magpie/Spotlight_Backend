@@ -47,7 +47,7 @@ def try_to_download_image(link, folder):
         os.makedirs(folder)
     try:
         req = urllib.request.Request(link, headers={"User-Agent": generate_user_agent()})
-        response = urllib.request.urlopen(req)
+        response = urllib.request.urlopen(req, timeout=10)
         if not (200 <= response.getcode() < 300):
             print('Error: status code is not 2xx')
             return 'fail'
@@ -71,7 +71,7 @@ def try_to_download_image(link, folder):
 
 
 def get_image_links(keyword):
-    print('Process keyword: {1}'.format(keyword))
+    print('Process keyword: {}'.format(keyword))
     quoted_keyword = quote(keyword)
     url = GOOGLE_IMAGE_FMT.format(keyword=quoted_keyword)
     page_content = _download_page(url)
@@ -81,7 +81,11 @@ def get_image_links(keyword):
 
 
 def main():
+    count = 0
     for spot in Spot.query:
+        count += 1
+        print('[count] {}'.format(count))
+
         try:
             if spot.zone:
                 keyword = spot.name + ' ' + spot.zone
@@ -100,6 +104,8 @@ def main():
                                 or try_to_download_image(spot.pic1, raw_folder) == 'fail'):
                 while len(image_links) > 0:
                     link = image_links.pop(0)
+                    if len(link) > 500:
+                        continue
                     if try_to_download_image(link, new_folder) == 'success':
                         spot.pic1 = link
                         print('update pic1: {}'.format(spot.pic1))
@@ -109,6 +115,8 @@ def main():
                                 or try_to_download_image(spot.pic2, raw_folder) == 'fail'):
                 while len(image_links) > 0:
                     link = image_links.pop(0)
+                    if len(link) > 500:
+                        continue
                     if try_to_download_image(link, new_folder) == 'success':
                         spot.pic2 = link
                         print('update pic2: {}'.format(spot.pic2))
@@ -118,6 +126,8 @@ def main():
                                 or try_to_download_image(spot.pic3, raw_folder) == 'fail'):
                 while len(image_links) > 0:
                     link = image_links.pop(0)
+                    if len(link) > 500:
+                        continue
                     if try_to_download_image(link, new_folder) == 'success':
                         spot.pic3 = link
                         print('update pic3: {}'.format(spot.pic3))
