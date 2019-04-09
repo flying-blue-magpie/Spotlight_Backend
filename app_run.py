@@ -263,6 +263,9 @@ def delete_own_proj(proj_id):
 
     proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
     if proj:
+        for fav_proj in FavoriteProject.query.filter_by(proj_id=proj_id).all():
+            db.session.delete(fav_proj)
+        db.session.commit()
         db.session.delete(proj)
         db.session.commit()
         return _get_response('success')
