@@ -183,14 +183,14 @@ def insert_rec_table_to_db(similar_spots_dict):
         pairs[i].add(j)
         pairs[j].add(i)
 
-    for spot in Spot.query.all():
+    for spot in Spot.query.order_by(Spot.id).all():
         i = spot.id
         try:
             rec_table = []
             for j in pairs[i]:
                 rec_table.append([
                     j,
-                    similar_spots_dict.get((i, j), similar_spots_dict.get(j, i)),
+                    similar_spots_dict.get((i, j), similar_spots_dict.get((j, i))),
                 ])
             rec_table.append(['other', similar_spots_dict['other']])
             spot.rec_table = json.dumps(rec_table)
