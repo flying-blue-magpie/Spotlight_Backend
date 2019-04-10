@@ -136,6 +136,14 @@ class Project(db.Model):
     def count_like_num(self):
         return FavoriteProject.query.filter_by(proj_id=self.proj_id).count()
 
+    def get_all_spots(self):
+        plan = json.loads(self.plan)
+        spot_ids = set()
+        for day_dict in plan:
+            for spot_dict in day_dict['arrange']:
+                spot_ids.add(spot_dict['spot_id'])
+        return list(spot_ids)
+
     class OneDayPlan:
         def __init__(self):
             self.start_time = '08:00:00'
