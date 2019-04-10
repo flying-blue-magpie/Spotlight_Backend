@@ -4,6 +4,8 @@ import os
 import re
 
 from flask import request, make_response
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 from config import app
 from config import db
@@ -219,7 +221,7 @@ def get_rec_spots():
     like_spot_ids = [
         like_spot.spot_id for like_spot
         in FavoriteSpot.query.filter_by(user_id=user_id)
-                             .order_by(FavoriteSpot.created_time).all()
+                             .order_by(FavoriteSpot.created_time.desc()).all()
     ]
     selected_favorite_ids = like_spot_ids[:5]
 
@@ -290,6 +292,41 @@ def get_projs():
         return _get_response('success', content=[proj.to_dict() for proj in projs])
     else:
         return _get_response('success', content=list())
+
+
+def _get_spot_avg_vectors(spot_ids):
+    spots = Spot.query.filter(Spot.id.in_(spot_ids)).all()
+    arr = np.array([json.loads(spot.rec_factors) for spot in spots])
+    return np.average(arr, axis=0)
+
+
+@app.route('/rec/projs', methods=['GET'])
+def get_rec_projs():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    projs = Project.query.filter_by(is_public=True).filter(Project.owner != user_id) \
+                   .order_by(Project.update_time.desc()).all()
+
+    favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
+    if not favorite_spots:
+        content = [p.proj_id for p in projs]
+        return _get_response('success', content=content)
+
+    user_vector = _get_spot_avg_vectors([fs.spot_id for fs in favorite_spots])
+
+    rating_list = []
+    for proj in projs:
+        spot_ids_in_proj = proj.get_all_spots()
+        if spot_ids_in_proj:
+            proj_vector = _get_spot_avg_vectors(spot_ids_in_proj)
+            r = cosine_similarity([user_vector], [proj_vector])
+        else:
+            r = 0
+        rating_list.append([r, proj.proj_id])
+    content = [id for _, id in sorted(rating_list, reverse=True)]
+    return _get_response('success', content=content)
 
 
 @app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])

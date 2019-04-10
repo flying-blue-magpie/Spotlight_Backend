@@ -57,6 +57,7 @@ class Spot(db.Model):
     px = db.Column(db.Float(precision=18))
     py = db.Column(db.Float(precision=18))
     rec_table = db.Column(db.String(50000))
+    rec_factors = db.Column(db.String(2000))
 
     def __init__(self, name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py):
         self.name = name
@@ -134,6 +135,14 @@ class Project(db.Model):
 
     def count_like_num(self):
         return FavoriteProject.query.filter_by(proj_id=self.proj_id).count()
+
+    def get_all_spots(self):
+        plan = json.loads(self.plan)
+        spot_ids = set()
+        for day_dict in plan:
+            for spot_dict in day_dict['arrange']:
+                spot_ids.add(spot_dict['spot_id'])
+        return list(spot_ids)
 
     class OneDayPlan:
         def __init__(self):

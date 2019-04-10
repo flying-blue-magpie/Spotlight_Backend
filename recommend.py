@@ -1,4 +1,3 @@
-import pickle
 import json
 from collections import defaultdict
 
@@ -135,14 +134,16 @@ def _get_equivalent_key(key):
     return (key[1], key[0])
 
 
-def get_similar_dict(tfidf, map_spot_ids, k=10):
+def get_similar_dict_and_factors(tfidf, map_spot_ids, k=10):
     cx = tfidf.tocoo()
-    sf = tc.SFrame({'user_id': [map_spot_ids[i] for i in cx.row], 'word_id': cx.col, 'r': cx.data})
-    model = tc.ranking_factorization_recommender.create(sf, 'word_id', 'user_id', target='r')
+    sf = tc.SFrame({'spot_id': [map_spot_ids[i] for i in cx.row], 'word_id': cx.col, 'r': cx.data})
+    model = tc.ranking_factorization_recommender.create(sf, 'word_id', 'spot_id', target='r')
+
+    # similar dict
     df_similar_spots = model.get_similar_items(k=k).to_dataframe()
     dict_similar_spots = dict()
     for i, row in df_similar_spots.iterrows():
-        key = (int(row.user_id), int(row.similar))
+        key = (int(row.spot_id), int(row.similar))
         equivalent_key = _get_equivalent_key(key)
         if equivalent_key not in dict_similar_spots:
             dict_similar_spots[key] = row.score
@@ -150,7 +151,11 @@ def get_similar_dict(tfidf, map_spot_ids, k=10):
     min_rating = min(dict_similar_spots.values())
     dict_similar_spots['other'] = min_rating
 
-    return dict_similar_spots
+    # factors
+    df = model.coefficients['spot_id'].to_dataframe()
+    factors = {row.spot_id: row.factors.tolist() for _, row in df.iterrows()}
+
+    return dict_similar_spots, factors
 
 
 def get_weighted_similar_dict(name_dict, describe_dict, ratio):
@@ -174,7 +179,19 @@ def get_weighted_similar_dict(name_dict, describe_dict, ratio):
     return weighted_similar_dict
 
 
-def insert_rec_table_to_db(similar_spots_dict):
+def get_weighted_factors(name_factors, describe_factors, ratio, factor_dim=32):
+    key_set = set(list(name_factors.keys()) + list(describe_factors.keys()))
+
+    weighted_factors = {}
+    for key in key_set:
+        fns = name_factors.get(key, [0.0 for _ in range(factor_dim)])
+        fds = describe_factors.get(key, [0.0 for _ in range(factor_dim)])
+        weighted_factors[key] = [(fn * ratio + fd) / (ratio + 1) for fn, fd in zip(fns, fds)]
+
+    return weighted_factors
+
+
+def insert_rec_table_to_db(similar_spots_dict, factors):
     pairs = defaultdict(set)
     for key in similar_spots_dict.keys():
         if key == 'other':
@@ -194,6 +211,9 @@ def insert_rec_table_to_db(similar_spots_dict):
                 ])
             rec_table.append(['other', similar_spots_dict['other']])
             spot.rec_table = json.dumps(rec_table)
+
+            spot.rec_factors = json.dumps(factors[i])
+
             db.session.commit()
         except:
             print('error on row {}'.format(i))
@@ -203,18 +223,24 @@ def insert_rec_table_to_db(similar_spots_dict):
 
 def main():
     tfidf_name, map_spot_ids_name = get_tfidf_bow(field='name')
-    similar_spots_name_dict = get_similar_dict(tfidf_name, map_spot_ids_name, k=10)
+    similar_spots_name_dict, name_factors = get_similar_dict_and_factors(
+        tfidf_name, map_spot_ids_name, k=10)
+
     tfidf_describe, map_spot_ids_describe = get_tfidf_bow(field='describe')
-    similar_spots_describe_dict = get_similar_dict(tfidf_describe, map_spot_ids_describe, k=50)
+    similar_spots_describe_dict, describe_factors = get_similar_dict_and_factors(
+        tfidf_describe, map_spot_ids_describe, k=50)
+
     similar_spots_dict = get_weighted_similar_dict(similar_spots_name_dict,
                                                    similar_spots_describe_dict,
                                                    ratio=5)
+
+    factors = get_weighted_factors(name_factors, describe_factors, ratio=5)
 
     s = sorted(similar_spots_dict.items(), key=lambda t: t[1], reverse=True)
     print('Head 100 items: ', {k: r for k, r in s[:100]})
     print('Number of dict items: ', len(similar_spots_dict))
 
-    insert_rec_table_to_db(similar_spots_dict)
+    insert_rec_table_to_db(similar_spots_dict, factors)
 
 
 if __name__ == '__main__':

@@ -80,3 +80,4 @@ ps: Need cookie to identify user_id
 - [x] DELETE `/proj/<int:proj_id>`, need cookie
 - [x] GET `/projs?owner=xxx&only_public=true`
     * example: `https://spotlight-server.herokuapp.com/projs?owner=1`
+- [x] GET `/rec/projs`, need cookie
