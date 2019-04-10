@@ -57,6 +57,7 @@ class Spot(db.Model):
     px = db.Column(db.Float(precision=18))
     py = db.Column(db.Float(precision=18))
     rec_table = db.Column(db.String(50000))
+    rec_factors = db.Column(db.String(2000))
 
     def __init__(self, name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py):
         self.name = name
