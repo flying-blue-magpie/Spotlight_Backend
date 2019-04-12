@@ -15,7 +15,8 @@ class User(db.Model):
     account = db.Column(db.String(255), nullable=False, unique=True)
     encoded_passwd = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
-    protrait = db.Column(db.LargeBinary())
+    protrait_link = db.Column(db.String(255))
+    del_protrait = db.Column(db.String(100))
 
     def __init__(self, account, passwd, name):
         self.account = account
@@ -35,7 +36,7 @@ class User(db.Model):
             user_id=self.id,
             account=self.account,
             name=self.name,
-            protrait=self.protrait,
+            protrait_link=self.protrait_link,
         )
 
 
