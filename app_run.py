@@ -148,11 +148,11 @@ def change_own_user():
     content = request.get_json()
     if 'name' in content:
         user.name = content['name']
-    if 'protrait' in content:
-        b64_code = content['protrait']
+    if 'portrait' in content:
+        b64_code = content['portrait']
         link, del_hash = upload_img_and_get_link(b64_code)
-        user.protrait_link = link
-        user.del_protrait = del_hash
+        user.portrait_link = link
+        user.del_portrait = del_hash
 
     db.session.commit()
     return _get_response('success')
