@@ -158,6 +158,29 @@ def change_own_user():
     return _get_response('success')
 
 
+@app.route('/stat/user/<int:user_id>', methods=['GET'])
+def get_user_statistic(user_id):
+
+    published_projs_count = Project.query.filter_by(owner=user_id, is_public=True).count()
+
+    collected_spots_count = FavoriteSpot.query.filter_by(user_id=user_id).count()
+    collected_projs_count = FavoriteProject.query.filter_by(user_id=user_id).count()
+
+    projs_liked_count = 0
+    for p in Project.query.filter_by(owner=user_id).all():
+        projs_liked_count += FavoriteProject.query.filter_by(proj_id=p.proj_id).count()
+
+    return _get_response(
+        'success',
+        content=dict(
+            published_projs_count=published_projs_count,
+            collected_spots_count=collected_spots_count,
+            collected_projs_count=collected_projs_count,
+            projs_liked_count=projs_liked_count,
+        )
+    )
+
+
 def _query_spot(spot_id):
     spot = Spot.query.filter_by(id=spot_id).first()
     return spot.to_dict() if spot else None
@@ -250,6 +273,162 @@ def get_rec_spots():
     return _get_response('success', content=content)
 
 
+@app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
+def change_like_spot(spot_id):
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    favorite_spot = FavoriteSpot.query.filter_by(
+        user_id=user_id, spot_id=spot_id).first()
+    if request.method == 'POST':
+        if not favorite_spot:
+            favorite_spot = FavoriteSpot(user_id, spot_id)
+            db.session.add(favorite_spot)
+            db.session.commit()
+    elif request.method == 'DELETE':
+        if favorite_spot:
+            db.session.delete(favorite_spot)
+            db.session.commit()
+    return _get_response('success')
+
+
+@app.route('/like/spots', methods=['GET'])
+def get_like_spots():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
+
+    favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
+    if favorite_spots:
+        favorite_spots_list = [fs.to_dict() for fs in favorite_spots]
+        if verbose == 1:
+            content = _get_spots_additional_info(favorite_spots_list)
+        else:
+            content = favorite_spots_list
+        return _get_response('success', content=content)
+    else:
+        return _get_response('success', content=list())
+
+
+@app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
+def change_like_proj(proj_id):
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    favorite_proj = FavoriteProject.query.filter_by(
+        user_id=user_id, proj_id=proj_id).first()
+    if request.method == 'POST':
+        if not favorite_proj:
+            favorite_proj = FavoriteProject(user_id, proj_id)
+            db.session.add(favorite_proj)
+            db.session.commit()
+    elif request.method == 'DELETE':
+        if favorite_proj:
+            db.session.delete(favorite_proj)
+            db.session.commit()
+    return _get_response('success')
+
+
+def _get_projs_additional_info(query_result):
+    result = []
+    for favorite_proj, proj in query_result:
+        dict_ = favorite_proj.to_dict()
+        dict_['proj_info'] = proj.to_dict()
+        result.append(dict_)
+    return result
+
+
+@app.route('/like/projs', methods=['GET'])
+def get_like_projs():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
+
+    query_result = (db.session.query(FavoriteProject, Project)
+                    .filter(FavoriteProject.proj_id == Project.proj_id)
+                    .filter(FavoriteProject.user_id == user_id)
+                    .filter(Project.is_public == True)
+                    .all())
+
+    if query_result:
+        if verbose == 1:
+            content = _get_projs_additional_info(query_result)
+        else:
+            favorite_projs, _ = zip(*query_result)
+            content = [fs.to_dict() for fs in favorite_projs]
+        return _get_response('success', content=content)
+    else:
+        return _get_response('success', content=list())
+
+
+@app.route('/own/proj', methods=['POST'])
+def create_own_proj():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    try:
+        content = request.get_json()
+        name = content['name']
+        start_day = strftime_to_datetime(content['start_day'])
+        tot_days = content['tot_days']
+    except:
+        return _get_response('fail', message='input is not correct')
+
+    one_day_plan_list = [Project.OneDayPlan() for _ in range(tot_days)]
+
+    params = [name, user_id, start_day, tot_days, one_day_plan_list]
+    proj = Project(*params)
+    db.session.add(proj)
+    db.session.commit()
+    return _get_response('success')
+
+
+@app.route('/own/projs', methods=['GET'])
+def get_own_projs():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    projs = Project.query.filter_by(owner=user_id).all()
+    if projs:
+        return _get_response('success', content=[proj.to_dict() for proj in projs])
+    else:
+        return _get_response('success', content=list())
+
+
+@app.route('/own/proj/<int:proj_id>', methods=['PUT'])
+def update_own_proj(proj_id):
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
+    if not proj:
+        return _get_response('fail', message='project is not found')
+
+    content = request.get_json()
+    if 'name' in content:
+        proj.name = content['name']
+    if 'start_day' in content:
+        proj.start_day = strftime_to_datetime(content['start_day'])
+    if 'tot_days' in content:
+        proj.tot_days = content['tot_days']
+    if 'plan' in content:
+        proj.plan = json.dumps(content['plan'], default=json_default_handler)
+    if 'is_public' in content:
+        proj.is_public = content['is_public']
+
+    db.session.commit()
+    return _get_response('success')
+
+
 def _query_proj(proj_id):
     proj = Project.query.filter_by(proj_id=proj_id).first()
     return proj.to_dict() if proj else None
@@ -333,26 +512,6 @@ def get_rec_projs():
     return _get_response('success', content=content)
 
 
-@app.route('/like/spot/<int:spot_id>', methods=['POST', 'DELETE'])
-def change_like_spot(spot_id):
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    favorite_spot = FavoriteSpot.query.filter_by(
-        user_id=user_id, spot_id=spot_id).first()
-    if request.method == 'POST':
-        if not favorite_spot:
-            favorite_spot = FavoriteSpot(user_id, spot_id)
-            db.session.add(favorite_spot)
-            db.session.commit()
-    elif request.method == 'DELETE':
-        if favorite_spot:
-            db.session.delete(favorite_spot)
-            db.session.commit()
-    return _get_response('success')
-
-
 def _get_spots_additional_info(favorite_spots_list):
     result = []
     for origin in favorite_spots_list:
@@ -360,165 +519,6 @@ def _get_spots_additional_info(favorite_spots_list):
         dict_['spot_info'] = _query_spot(origin['spot_id'])
         result.append(dict_)
     return result
-
-
-@app.route('/like/spots', methods=['GET'])
-def get_like_spots():
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
-
-    favorite_spots = FavoriteSpot.query.filter_by(user_id=user_id).all()
-    if favorite_spots:
-        favorite_spots_list = [fs.to_dict() for fs in favorite_spots]
-        if verbose == 1:
-            content = _get_spots_additional_info(favorite_spots_list)
-        else:
-            content = favorite_spots_list
-        return _get_response('success', content=content)
-    else:
-        return _get_response('success', content=list())
-
-
-@app.route('/own/proj', methods=['POST'])
-def create_own_proj():
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    try:
-        content = request.get_json()
-        name = content['name']
-        start_day = strftime_to_datetime(content['start_day'])
-        tot_days = content['tot_days']
-    except:
-        return _get_response('fail', message='input is not correct')
-
-    one_day_plan_list = [Project.OneDayPlan() for _ in range(tot_days)]
-
-    params = [name, user_id, start_day, tot_days, one_day_plan_list]
-    proj = Project(*params)
-    db.session.add(proj)
-    db.session.commit()
-    return _get_response('success')
-
-
-@app.route('/own/projs', methods=['GET'])
-def get_own_projs():
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    projs = Project.query.filter_by(owner=user_id).all()
-    if projs:
-        return _get_response('success', content=[proj.to_dict() for proj in projs])
-    else:
-        return _get_response('success', content=list())
-
-
-@app.route('/own/proj/<int:proj_id>', methods=['PUT'])
-def update_own_proj(proj_id):
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    proj = Project.query.filter_by(proj_id=proj_id, owner=user_id).first()
-    if not proj:
-        return _get_response('fail', message='project is not found')
-
-    content = request.get_json()
-    if 'name' in content:
-        proj.name = content['name']
-    if 'start_day' in content:
-        proj.start_day = strftime_to_datetime(content['start_day'])
-    if 'tot_days' in content:
-        proj.tot_days = content['tot_days']
-    if 'plan' in content:
-        proj.plan = json.dumps(content['plan'], default=json_default_handler)
-    if 'is_public' in content:
-        proj.is_public = content['is_public']
-
-    db.session.commit()
-    return _get_response('success')
-
-
-@app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
-def change_like_proj(proj_id):
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    favorite_proj = FavoriteProject.query.filter_by(
-        user_id=user_id, proj_id=proj_id).first()
-    if request.method == 'POST':
-        if not favorite_proj:
-            favorite_proj = FavoriteProject(user_id, proj_id)
-            db.session.add(favorite_proj)
-            db.session.commit()
-    elif request.method == 'DELETE':
-        if favorite_proj:
-            db.session.delete(favorite_proj)
-            db.session.commit()
-    return _get_response('success')
-
-
-def _get_projs_additional_info(query_result):
-    result = []
-    for favorite_proj, proj in query_result:
-        dict_ = favorite_proj.to_dict()
-        dict_['proj_info'] = proj.to_dict()
-        result.append(dict_)
-    return result
-
-
-@app.route('/like/projs', methods=['GET'])
-def get_like_projs():
-    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
-    if not user_id:
-        return _get_response('fail', message='user_id is missing')
-
-    verbose = int(request.args.get('verbose')) if 'verbose' in request.args else 0
-
-    query_result = (db.session.query(FavoriteProject, Project)
-                    .filter(FavoriteProject.proj_id == Project.proj_id)
-                    .filter(FavoriteProject.user_id == user_id)
-                    .filter(Project.is_public == True)
-                    .all())
-
-    if query_result:
-        if verbose == 1:
-            content = _get_projs_additional_info(query_result)
-        else:
-            favorite_projs, _ = zip(*query_result)
-            content = [fs.to_dict() for fs in favorite_projs]
-        return _get_response('success', content=content)
-    else:
-        return _get_response('success', content=list())
-
-
-@app.route('/stat/user/<int:user_id>', methods=['GET'])
-def get_user_statistic(user_id):
-
-    published_projs_count = Project.query.filter_by(owner=user_id, is_public=True).count()
-
-    collected_spots_count = FavoriteSpot.query.filter_by(user_id=user_id).count()
-    collected_projs_count = FavoriteProject.query.filter_by(user_id=user_id).count()
-
-    projs_liked_count = 0
-    for p in Project.query.filter_by(owner=user_id).all():
-        projs_liked_count += FavoriteProject.query.filter_by(proj_id=p.proj_id).count()
-
-    return _get_response(
-        'success',
-        content=dict(
-            published_projs_count=published_projs_count,
-            collected_spots_count=collected_spots_count,
-            collected_projs_count=collected_projs_count,
-            projs_liked_count=projs_liked_count,
-        )
-    )
 
 
 if __name__ == '__main__':
