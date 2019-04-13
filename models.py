@@ -59,8 +59,13 @@ class Spot(db.Model):
     py = db.Column(db.Float(precision=18))
     rec_table = db.Column(db.String(50000))
     rec_factors = db.Column(db.String(2000))
+    del_pic1 = db.Column(db.String(100))
+    del_pic2 = db.Column(db.String(100))
+    del_pic3 = db.Column(db.String(100))
+    owner = db.Column(db.Integer, db.ForeignKey("Users.id"))
 
-    def __init__(self, name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py):
+    def __init__(self, name, zone, describe, tel, website, keyword, address,
+                 pic1, pic2, pic3, px, py, del_pic1=None, del_pic2=None, del_pic3=None, owner=None):
         self.name = name
         self.zone = zone
         self.describe = describe
@@ -73,6 +78,10 @@ class Spot(db.Model):
         self.pic3 = pic3
         self.px = px
         self.py = py
+        self.del_pic1 = del_pic1
+        self.del_pic2 = del_pic2
+        self.del_pic3 = del_pic3
+        self.owner = owner
 
     def to_dict(self):
         return dict(
@@ -88,6 +97,7 @@ class Spot(db.Model):
             px=self.px,
             py=self.py,
             like_num=self.count_like_num(),
+            owner=self.owner,
         )
 
     def count_like_num(self):
