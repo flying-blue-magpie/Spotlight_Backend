@@ -20,6 +20,7 @@ turicreate==5.4
 six==1.11.0
 pyyaml==3.13
 tqdm==4.28.1
+requests==2.21.0
 
 ### test
 pytest==4.0.2

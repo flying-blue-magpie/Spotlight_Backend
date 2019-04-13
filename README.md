@@ -48,6 +48,7 @@ ps: Need cookie to identify user_id
 - [x] GET `/user/<int:user_id>`
 - [x] GET `/users`
 - [x] PUT `/own/user`, need cookie
+    * put json body: `{"name": "xxx", "portrait": "b64_img_code"}`
 - [x] GET `/stat/user/<int:user_id>`
     * keys of response: "published_projs_count", "collected_spots_count", "collected_projs_count", "projs_liked_count"
 
@@ -57,13 +58,18 @@ ps: Need cookie to identify user_id
 - [x] GET `/spots?zone=xxx&zone=xxx&kw=xxx&page=xxx`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=高雄市&zone=新竹市&page=0`
     * example: `https://spotlight-server.herokuapp.com/spots?zone=宜蘭縣&kw=夜市`
+    * `zone` needs in `['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '基隆市', '新竹市', '嘉義市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣', '金門縣', '連江縣']`
 - [x] GET `/rec/spots?zone=xxx&zone=xxx&kw=xxx`, need cookie
     * example: `https://spotlight-server.herokuapp.com/rec/spots?zone=宜蘭縣&kw=夜市`
+    * `zone` needs in `['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '基隆市', '新竹市', '嘉義市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣', '金門縣', '連江縣']`
 - [x] POST or DELETE `/like/spot/<int:spot_id>`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spot/5`
 - [x] GET `/like/spots`, need cookie
     * example: `admin`, `https://spotlight-server.herokuapp.com/like/spots`
     * more info: `https://spotlight-server.herokuapp.com/like/spots?verbose=1`
+- [x] POST `/own/spot`, need cookie
+    * post json body: `{"name": "xxx", "zone": "xxx", "describe": "xxx", "tel": "xxx", "website": "xxx", "address": "xxx", "pic1": "b64_img_code", "pic2": "b64_img_code", "pic3": "b64_img_code"}`
+    * `zone` needs in `['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '基隆市', '新竹市', '嘉義市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣', '金門縣', '連江縣']`
 
 ### For Projects
 - [x] POST or DELETE `/like/proj/<int:proj_id>`, need cookie
