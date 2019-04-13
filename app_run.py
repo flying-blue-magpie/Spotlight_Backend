@@ -23,6 +23,11 @@ COOKIE_KEY = 'spotlight-server-cookie'
 REC_MANAGER = RecManager()
 EMAIL_REGEX = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
 PASSWORD_REGEX = r'^[a-zA-Z\d#$^+=!*()@%&].{0,20}$'
+AREA_LIST = ['臺北市', '新北市', '桃園市', '臺中市', '臺南市',
+             '高雄市', '基隆市', '新竹市', '嘉義市', '新竹縣',
+             '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣',
+             '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣',
+             '金門縣', '連江縣']
 
 
 def _get_cookie(user_id):
@@ -313,6 +318,44 @@ def get_like_spots():
         return _get_response('success', content=list())
 
 
+@app.route('/own/spot', methods=['POST'])
+def create_own_spot():
+    user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
+    if not user_id:
+        return _get_response('fail', message='user_id is missing')
+
+    try:
+        content = request.get_json()
+        name = content['name']
+        zone = content.get('zone', '')
+        if zone and zone not in AREA_LIST:
+            return _get_response('fail', message='zone is out of list')
+        describe = content.get('describe')
+        tel = content.get('tel')
+        website = content.get('website')
+        address = content.get('address')
+
+        pic1_b64 = content.get('pic1')
+        pic2_b64 = content.get('pic2')
+        pic3_b64 = content.get('pic3')
+
+        pic1, del_pic1 = upload_img_and_get_link(pic1_b64) if pic1_b64 else (None, None)
+        pic2, del_pic2 = upload_img_and_get_link(pic2_b64) if pic2_b64 else (None, None)
+        pic3, del_pic3 = upload_img_and_get_link(pic3_b64) if pic3_b64 else (None, None)
+    except:
+        return _get_response('fail', message='input is not correct')
+
+    keyword = None
+    px = None
+    py = None
+
+    spot = Spot(name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py,
+                del_pic1, del_pic2, del_pic3, user_id)
+    db.session.add(spot)
+    db.session.commit()
+    return _get_response('success')
+
+
 @app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
 def change_like_proj(proj_id):
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
@@ -479,7 +522,7 @@ def get_projs():
 
 def _get_spot_avg_vectors(spot_ids):
     spots = Spot.query.filter(Spot.id.in_(spot_ids)).all()
-    arr = np.array([json.loads(spot.rec_factors) for spot in spots])
+    arr = np.array([json.loads(spot.rec_factors) for spot in spots if spot.rec_factors])
     return np.average(arr, axis=0)
 
 

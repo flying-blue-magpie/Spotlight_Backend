@@ -61,6 +61,8 @@ class RecManager:
 
         table = {}
         for i, json_str in query:
+            if json_str is None:
+                continue
             for j, r in json.loads(json_str):
                 if j != 'other':
                     table[(i, j)] = r
