@@ -16,6 +16,7 @@ from models import FavoriteSpot
 from models import FavoriteProject
 from utils import json_default_handler
 from utils import strftime_to_datetime
+from utils import upload_img_and_get_link
 from recommend import RecManager
 
 COOKIE_KEY = 'spotlight-server-cookie'
@@ -137,7 +138,7 @@ def get_users():
 
 
 @app.route('/own/user', methods=['PUT'])
-def change_own_user(user_id):
+def change_own_user():
     user_id = _get_user_from_cookie(request.cookies.get(COOKIE_KEY))
     if not user_id:
         return _get_response('fail', message='user_id is missing')
@@ -148,7 +149,10 @@ def change_own_user(user_id):
     if 'name' in content:
         user.name = content['name']
     if 'protrait' in content:
-        user.protrait = content['protrait']
+        b64_code = content['protrait']
+        link, del_hash = upload_img_and_get_link(b64_code)
+        user.protrait_link = link
+        user.del_protrait = del_hash
 
     db.session.commit()
     return _get_response('success')

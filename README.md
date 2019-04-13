@@ -48,6 +48,7 @@ ps: Need cookie to identify user_id
 - [x] GET `/user/<int:user_id>`
 - [x] GET `/users`
 - [x] PUT `/own/user`, need cookie
+    * put json body: `{"name": "xxx", "protrait": "b64_img_code"}`
 - [x] GET `/stat/user/<int:user_id>`
     * keys of response: "published_projs_count", "collected_spots_count", "collected_projs_count", "projs_liked_count"
 
