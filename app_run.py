@@ -328,7 +328,7 @@ def create_own_spot():
         content = request.get_json()
         name = content['name']
         zone = content.get('zone', '')
-        if zone and zone not in AREA_LIST:
+        if zone and zone not in (AREA_LIST + ['']):
             return _get_response('fail', message='zone is out of list')
         describe = content.get('describe')
         tel = content.get('tel')
@@ -353,7 +353,13 @@ def create_own_spot():
                 del_pic1, del_pic2, del_pic3, user_id)
     db.session.add(spot)
     db.session.commit()
-    return _get_response('success')
+
+    # add to like-spot
+    favorite_spot = FavoriteSpot(user_id, spot.id)
+    db.session.add(favorite_spot)
+    db.session.commit()
+
+    return _get_response('success', content=spot.to_dict())
 
 
 @app.route('/like/proj/<int:proj_id>', methods=['POST', 'DELETE'])
