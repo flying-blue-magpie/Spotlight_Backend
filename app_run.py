@@ -9,6 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from config import app
 from config import db
+from config import POSITITION
 from models import User
 from models import Spot
 from models import Project
@@ -328,12 +329,13 @@ def create_own_spot():
         content = request.get_json()
         name = content['name']
         zone = content.get('zone', '')
-        if zone and zone not in (AREA_LIST + ['']):
+        if zone and zone not in (AREA_LIST):
             return _get_response('fail', message='zone is out of list')
+        address = content['address']
+
         describe = content.get('describe')
         tel = content.get('tel')
         website = content.get('website')
-        address = content.get('address')
 
         pic1_b64 = content.get('pic1')
         pic2_b64 = content.get('pic2')
@@ -346,8 +348,19 @@ def create_own_spot():
         return _get_response('fail', message='input is not correct')
 
     keyword = None
+
     px = None
     py = None
+    for detail, (_code, _px, _py) in POSITITION[zone].items():
+        if detail == 'ALL':
+            continue
+        print(detail+address)
+        if detail in address:
+            px = _px
+            py = _py
+            break
+    else:
+        _, px, py = POSITITION[zone]['ALL']
 
     spot = Spot(name, zone, describe, tel, website, keyword, address, pic1, pic2, pic3, px, py,
                 del_pic1, del_pic2, del_pic3, user_id)
