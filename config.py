@@ -1,4 +1,5 @@
 import os
+import json
 
 from flask import Flask
 from flask_cors import CORS
@@ -26,3 +27,7 @@ app.config['MSEARCH_INDEX_NAME'] = 'msearch'
 app.config['MSEARCH_BACKEND'] = 'whoosh'
 app.config['MSEARCH_ENABLE'] = True
 search = Search(app, db=db, analyzer=ChineseAnalyzer())
+
+# estimate px and py
+with open('data/position_data.json', 'r') as fr:
+    POSITITION = json.load(fr)
