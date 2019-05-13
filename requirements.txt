@@ -47,3 +47,6 @@ psycopg2-binary==2.7.7
 ## crawler
 user_agent==0.1.9
 Pillow==6.0.0
+
+## translation
+googletrans==2.4.0
