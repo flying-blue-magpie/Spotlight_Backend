@@ -187,19 +187,20 @@ def get_user_statistic(user_id):
     )
 
 
-def _query_spot(spot_id):
+def _query_spot(spot_id, lang='zh'):
     spot = Spot.query.filter_by(id=spot_id).first()
-    return spot.to_dict() if spot else None
+    return spot.to_dict(lang=lang) if spot else None
 
 
 @app.route('/spot/<int:spot_id>', methods=['GET'])
 def get_spot(spot_id):
-    content = _query_spot(spot_id)
+    lang = request.args.get('lang', 'zh')
+    content = _query_spot(spot_id, lang=lang)
     return _get_response('success', content=content) if content else _get_response('fail')
 
 
 def _query_spots(zones=None, keyword=None, page_slice=None,
-                 excluded_ids=None, included_ids=None, only_id=False):
+                 excluded_ids=None, included_ids=None, only_id=False, lang='zh'):
     result = Spot.query
 
     if keyword:
@@ -224,7 +225,7 @@ def _query_spots(zones=None, keyword=None, page_slice=None,
     else:
         spots = result.all()
 
-    return [spot.to_dict() for spot in spots]
+    return [spot.to_dict(lang=lang) for spot in spots]
 
 
 @app.route('/spots', methods=['GET'])
@@ -232,10 +233,11 @@ def get_spots():
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
     page = int(request.args.get('page')) if request.args.get('page') else 0
+    lang = request.args.get('lang', 'zh')
 
     NUM_PER_PAGE = 1
     page_slice = slice(page*NUM_PER_PAGE, (page+1)*NUM_PER_PAGE)
-    content = _query_spots(zones=zones, keyword=keyword, page_slice=page_slice)
+    content = _query_spots(zones=zones, keyword=keyword, page_slice=page_slice, lang=lang)
 
     return _get_response('success', content=content)
 
@@ -248,6 +250,7 @@ def get_rec_spots():
 
     zones = request.args.getlist('zone')
     keyword = request.args.get('kw')
+    lang = request.args.get('lang', 'zh')
 
     NUM_PER_PAGE = 1
 
@@ -260,7 +263,7 @@ def get_rec_spots():
 
     if REC_MANAGER.should_be_put(user_id, zones, keyword):
         spot_dict_list = _query_spots(zones=zones, keyword=keyword,
-                                      excluded_ids=like_spot_ids, only_id=True)
+                                      excluded_ids=like_spot_ids, only_id=True, lang=lang)
         REC_MANAGER.put(
             user_id,
             [d['spot_id'] for d in spot_dict_list],
@@ -274,7 +277,7 @@ def get_rec_spots():
         REC_MANAGER.update(user_id, selected_favorite_ids)
 
     selected_ids = REC_MANAGER.pop(user_id, NUM_PER_PAGE)
-    content = _query_spots(included_ids=selected_ids)
+    content = _query_spots(included_ids=selected_ids, lang=lang)
 
     return _get_response('success', content=content)
 
