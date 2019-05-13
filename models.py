@@ -3,9 +3,14 @@ import hashlib
 import json
 
 from sqlalchemy import func
+from googletrans import Translator
 
 from config import db
 from utils import json_default_handler
+
+
+def trans(content):
+    return Translator().translate(content, dest='en').text
 
 
 class User(db.Model):
@@ -83,16 +88,16 @@ class Spot(db.Model):
         self.del_pic3 = del_pic3
         self.owner = owner
 
-    def to_dict(self):
+    def to_dict(self, lang='en'):
         return dict(
             spot_id=self.id,
-            name=self.name,
+            name=self.name if lang == 'zh' else trans(self.name),
             zone=self.zone,
-            describe=self.describe,
+            describe=self.describe if lang == 'zh' else trans(self.describe),
             tel=self.tel,
             website=self.website,
             keyword=self.keyword,
-            address=self.address,
+            address=self.address if lang == 'zh' else trans(self.address),
             pic=[p for p in [self.pic1, self.pic2, self.pic3] if p],
             px=self.px,
             py=self.py,
